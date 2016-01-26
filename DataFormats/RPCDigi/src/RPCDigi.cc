@@ -10,12 +10,20 @@
 
 RPCDigi::RPCDigi (int strip, int bx) :
   strip_(strip),
-  bx_(bx)
+  bx_(bx),
+  time_(0),
+  coordinateY_(0),
+  hasTime_(false),
+  hasY_(false)
 {}
 
 RPCDigi::RPCDigi ():
   strip_(0),
-  bx_(0) 
+  bx_(0),
+  time_(0),
+  coordinateY_(0),
+  hasTime_(false),
+  hasY_(false) 
 {}
 
 
@@ -50,5 +58,36 @@ void
 RPCDigi::print() const {
   std::cout << "Strip " << strip() 
        << " bx " << bx() <<std::endl;
+}
+
+
+double RPCDigi::time() const 
+{
+  return time_;
+}
+
+double RPCDigi::coordinateY() const
+{
+  return coordinateY_;
+}
+
+bool RPCDigi::hasTime() const
+{
+  return hasTime_;
+}
+
+bool RPCDigi::hasY() const
+{
+  return hasY_;
+}
+
+void RPCDigi::hasTime(bool has)
+{
+  hasTime_ = has;
+}
+
+void RPCDigi::hasY(bool has)
+{
+  hasY_ =has;
 }
 
