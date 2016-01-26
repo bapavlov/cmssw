@@ -25,10 +25,20 @@ public:
   int strip() const ;
   int bx() const;
   void print() const;
+  double time() const;
+  double coordinateY() const;
+  bool hasTime() const;
+  bool hasY() const;
+  void hasTime(bool);
+  void hasY(bool);
 
 private:
   uint16_t strip_;
-  int32_t  bx_; 
+  int32_t  bx_;
+  double time_;
+  double coordinateY_;
+  bool hasTime_;
+  bool hasY_;
 };
 
 std::ostream & operator<<(std::ostream & o, const RPCDigi& digi);
