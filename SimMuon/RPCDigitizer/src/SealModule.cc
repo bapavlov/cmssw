@@ -14,6 +14,7 @@
 #include "SimMuon/RPCDigitizer/src/RPCSimAsymmetricCls.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimModelTiming.h"
 #include "SimMuon/RPCDigitizer/src/RPCNeutronWriter.h"
+#include "SimMuon/RPCDigitizer/src/RPCSimModelPseudodigi.h"
 
 DEFINE_FWK_MODULE(RPCDigiProducer);
 DEFINE_FWK_MODULE(RPCandIRPCDigiProducer);
@@ -21,4 +22,5 @@ DEFINE_FWK_MODULE(RPCandIRPCDigiProducer);
 DEFINE_EDM_PLUGIN(RPCSimFactory,RPCSimAverageNoiseEffCls,"RPCSimAverageNoiseEffCls");
 DEFINE_EDM_PLUGIN(RPCSimFactory,RPCSimAsymmetricCls,"RPCSimAsymmetricCls");
 DEFINE_EDM_PLUGIN(RPCSimFactory,RPCSimModelTiming,"RPCSimModelTiming");
+DEFINE_EDM_PLUGIN(RPCSimFactory,RPCSimModelPseudodigi,"RPCSimModelPseudodigi");
 DEFINE_FWK_MODULE(RPCNeutronWriter);
