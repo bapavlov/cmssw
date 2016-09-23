@@ -18,6 +18,8 @@
 
 #include "RecoLocalMuon/RPCRecHit/src/RPCRollMask.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "Geometry/RPCGeometry/interface/RPCRoll.h"
+
 
 class RPCCluster;
 class RPCRoll;

@@ -25,8 +25,14 @@ edm::OwnVector<RPCRecHit> RPCRecHitBaseAlgo::reconstruct(const RPCRoll& roll,
   RPCClusterizer clizer;
   RPCClusterContainer tcls = clizer.doAction(digiRange);
   RPCMaskReClusterizer mrclizer;
-  RPCClusterContainer cls = mrclizer.doAction(rpcId,tcls,mask);
-
+  RPCClusterContainer cls;
+  if(roll.isIRPC()){
+    cls = tcls;
+  }
+  else {
+    cls = mrclizer.doAction(rpcId,tcls,mask);
+  }
+  
   for ( auto cl : cls ) {
     LocalError tmpErr;
     LocalPoint point;
