@@ -20,8 +20,7 @@ RPCClusterContainer RPCMaskReClusterizer::doAction(const RPCDetId& id,
     // So the prev. cluster is placed after the current cluster (check the < operator of RPCCluster carefully)
     if ( (prev.firstStrip()-cl->lastStrip()) == 2 and
          this->get(mask, cl->lastStrip()+1) and prev.bx() == cl->bx() ) {
-      RPCCluster merged(cl->firstStrip(), prev.lastStrip(), cl->bx());
-      prev = merged;
+      prev.merge(*cl);
     }
     else {
       finClusters.insert(prev);

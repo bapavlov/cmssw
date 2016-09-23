@@ -21,23 +21,34 @@ bool RPCRecHitStandardAlgo::compute(const RPCRoll& roll,
             float& time, float& timeErr)  const
 {
   // Get Average Strip position
-  const float fstrip = (roll.centreOfStrip(cluster.firstStrip())).x();
-  const float lstrip = (roll.centreOfStrip(cluster.lastStrip())).x();
-  const float centreOfCluster = (fstrip + lstrip)/2;
-
-  Point = LocalPoint(centreOfCluster,cluster.y(),0);
-  if ( !cluster.hasY() ) {
-    error = LocalError(roll.localError((cluster.firstStrip()+cluster.lastStrip())/2.));
+  float x, xx;
+  if ( cluster.hasX() ) {
+    x = (cluster.firstX()+cluster.lastX())/2;
+    const float dx = cluster.lastX()-cluster.firstX();
+    xx = dx*dx/12;
   }
   else {
-    // Use the default one for local x error
-    const float ex2 = roll.localError((cluster.firstStrip()+cluster.lastStrip())/2.).xx();
+    const float fstrip = (roll.centreOfStrip(cluster.firstStrip())).x();
+    const float lstrip = (roll.centreOfStrip(cluster.lastStrip())).x();
+    x = (fstrip + lstrip)/2;
+    xx = LocalError(roll.localError((cluster.firstStrip()+cluster.lastStrip())/2.)).xx();
+  }
+
+  const float y = cluster.y();
+  Point = LocalPoint(x, y, 0);
+
+  float yy;
+  if ( !cluster.hasY() ) {
+    yy = LocalError(roll.localError((cluster.firstStrip()+cluster.lastStrip())/2.)).yy();
+  }
+  else {
     // Maximum estimate of local y error, (distance to the boundary)/sqrt(3)
     // which gives consistent error to the default one at y=0
     const float stripLen = roll.specificTopology().stripLength();
     const float maxDy = stripLen/2 - std::abs(cluster.y());
-    error = LocalError(ex2, 0, maxDy*maxDy/3.);
+    yy = maxDy*maxDy/3;
   }
+  error = LocalError(xx, 0, yy); // xx, xy, yy
 
   if ( cluster.hasTime() ) {
     time = cluster.time();
