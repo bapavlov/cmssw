@@ -1,5 +1,5 @@
-#ifndef RPCDigitizer_RPCSimModelTiming_h
-#define RPCDigitizer_RPCSimModelTiming_h
+#ifndef RPCDigitizer_RPCSimModelPseudodigi_h
+#define RPCDigitizer_RPCSimModelPseudodigi_h
 
 /** \class RPCSimAverage
  *   Class for the RPC strip response simulation based
@@ -28,18 +28,21 @@ namespace CLHEP {
   class HepRandomEngine;
 }
 
-class RPCSimModelTiming : public RPCSim
+class RPCSimModelPseudodigi : public RPCSim
 {
  public:
-  RPCSimModelTiming(const edm::ParameterSet& config);
-  ~RPCSimModelTiming();
+  RPCSimModelPseudodigi(const edm::ParameterSet& config);
+  ~RPCSimModelPseudodigi();
   void simulate(const RPCRoll* roll,
                 const edm::PSimHitContainer& rpcHits,
                  CLHEP::HepRandomEngine*) override;
   void simulateNoise(const RPCRoll*,
                      CLHEP::HepRandomEngine*) override;
   int getClSize(uint32_t id,float posX, CLHEP::HepRandomEngine*);
-  int LeftRightNeighbour(const RPCRoll& roll, const LocalPoint & hit_pos, int strip);
+
+  void handleDigi(int strip, int time_hit, double precise_time, double smearedPositionX, 
+		  double smearedPositionY, int n, double localPitch, const PSimHit & hit );
+
 
  protected:
   void init(){};
@@ -59,6 +62,7 @@ class RPCSimModelTiming : public RPCSim
   double rate;
   double gate;
   double frate;
+  int N_strips;
   bool do_Y;
   double sigmaY;
 

@@ -1,6 +1,6 @@
 #include "Geometry/RPCGeometry/interface/RPCRoll.h"
 #include "Geometry/RPCGeometry/interface/RPCRollSpecs.h"
-#include "SimMuon/RPCDigitizer/src/RPCSimModelTiming.h"
+#include "SimMuon/RPCDigitizer/src/RPCSimModelPseudodigi.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimSetUp.h"
 
 #include "SimMuon/RPCDigitizer/src/RPCSynchronizer.h"
@@ -37,7 +37,7 @@
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
-RPCSimModelTiming::RPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(config)
+RPCSimModelPseudodigi::RPCSimModelPseudodigi(const edm::ParameterSet& config) : RPCSim(config)
 {
   aveEff = config.getParameter<double>("averageEfficiency");
   aveCls = config.getParameter<double>("averageClusterSize");
@@ -53,6 +53,7 @@ RPCSimModelTiming::RPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(c
   nbxing=config.getParameter<int>("Nbxing");
   gate=config.getParameter<double>("Gate");
   frate=config.getParameter<double>("Frate");
+  N_strips=config.getParameter<int>("N_strips");
   do_Y =  config.getParameter<bool>("do_Y_coordinate");
   sigmaY = config.getParameter<double>("sigmaY");
 
@@ -71,12 +72,12 @@ RPCSimModelTiming::RPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(c
 
 }
 
-RPCSimModelTiming::~RPCSimModelTiming()
+RPCSimModelPseudodigi::~RPCSimModelPseudodigi()
 {
   delete _rpcSync;
 }
 
-void RPCSimModelTiming::simulate(const RPCRoll* roll,
+void RPCSimModelPseudodigi::simulate(const RPCRoll* roll,
                 const edm::PSimHitContainer& rpcHits,
                  CLHEP::HepRandomEngine* engine) 
 {
@@ -88,9 +89,8 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
 
   RPCDetId rpcId = roll->id();
   RPCGeomServ RPCname(rpcId);
-  //std::string nameRoll = RPCname.name();
 
-  const Topology& topology=roll->specs()->topology();
+ const TrapezoidalStripTopology* topology=dynamic_cast<const TrapezoidalStripTopology*>(&(roll->topology()));
 
   for (edm::PSimHitContainer::const_iterator _hit = rpcHits.begin();
        _hit != rpcHits.end(); ++_hit){
@@ -102,125 +102,87 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
     int time_hit = _rpcSync->getSimHitBxAndTimingForIRPC(&(*_hit), engine);
     double precise_time = _rpcSync->getSmearedTime();
 
-    float posX = roll->strip(_hit->localPosition()) - static_cast<int>(roll->strip(_hit->localPosition()));
+    //    float posX = roll->strip(_hit->localPosition()) - static_cast<int>(roll->strip(_hit->localPosition()));
+    
+    double strip = roll->strip(_hit->localPosition());
+    double localPitch = roll->localPitch(_hit->localPosition());
+    //    float posX = strip - static_cast<int>(strip);
+    double pseudostrip = strip*N_strips/roll->nstrips();
+    float posX = pseudostrip - static_cast<int>(pseudostrip);
+
 
     std::vector<float> veff = (getRPCSimSetUp())->getEff(rpcId.rawId());
 
     // Effinciecy
-    int centralStrip = topology.channel(entr)+1;;
+//int centralStrip =  roll->strip(_hit->localPosition()) ;  
+        int centralStrip = topology->channel(entr)+1;
+//    int centralStrip = static_cast<int>(pseudostrip)+1;
     float fire = CLHEP::RandFlat::shoot(engine);
+    
+    float smearedOffsetX = CLHEP::RandGaussQ::shoot(engine,_hit->localPosition().x(),localPitch/sqrt(12));
+    float smearedPositionX = _hit->localPosition().x()+smearedOffsetX;
     float smearedOffsetY = CLHEP::RandGaussQ::shoot(engine,_hit->localPosition().y(),sigmaY);
     float smearedPositionY = _hit->localPosition().y()+smearedOffsetY;
 
-    //std::cout<<"roll->nstrips()\t=\t"<<roll->nstrips()<<std::endl;
-    //std::cout<<"localPitch\t"<<roll->localPitch(_hit->localPosition())<<std::endl;
-    //std::cout<<"Pitch\t"<<roll->pitch()<<std::endl;
     if (fire < veff[centralStrip-1]) {
 
       int fstrip=centralStrip;
       int lstrip=centralStrip;
 
-      // Compute the cluster size
-      // double w = CLHEP::RandFlat::shoot(engine);
-      //if (w < 1.e-10) w=1.e-10;
-//       int clsize = this->getClSize(posX, engine); // This is for one and the same cls for all the chambers
       int clsize = this->getClSize(rpcId.rawId(),posX, engine); // This is for cluster size chamber by chamber
-      std::vector<int> cls;
-      cls.push_back(centralStrip);
+
+ 
+      //      std::vector<int> cls;
+      //      cls.push_back(centralStrip);
+    
+      handleDigi(centralStrip, time_hit, precise_time, smearedPositionX, smearedPositionY, 0 , localPitch, *_hit );
+
+ 
+      
       if (clsize > 1){
 	for (int cl = 0; cl < (clsize-1)/2; cl++){
 	  if (centralStrip - cl -1 >= 1  ){
 	    fstrip = centralStrip-cl-1;
-	    cls.push_back(fstrip);
+	    handleDigi(fstrip, time_hit, precise_time, smearedPositionX, smearedPositionY, fstrip-centralStrip , localPitch, *_hit );
 	  }
 	  if (centralStrip + cl + 1 <= roll->nstrips() ){
 	    lstrip = centralStrip+cl+1;
-	    cls.push_back(lstrip);
+	    handleDigi(lstrip, time_hit, precise_time, smearedPositionX, smearedPositionY, lstrip-centralStrip , localPitch, *_hit );
 	  }
 	}
 	if (clsize%2 == 0 ){
 	  // insert the last strip according to the 
 	  // simhit position in the central strip 
-	  int lr = LeftRightNeighbour(*roll, entr, centralStrip);
-	  //	  std::cout<<"LeftRightNeighbour(*roll, entr, centralStrip)\t"<<lr<<std::endl;
-	  if (lr==1) {
+	  double deltaw=roll->centreOfStrip(centralStrip).x()-entr.x();
+	  if (deltaw<0.) {
 	    if (lstrip < roll->nstrips() ){
 	      lstrip++;
-	      cls.push_back(lstrip);
+	      handleDigi(lstrip, time_hit, precise_time, smearedPositionX, smearedPositionY, lstrip-centralStrip , localPitch, *_hit );
 	    }
 	  }else{
 	    if (fstrip > 1 ){
 	      fstrip--;
-	      cls.push_back(fstrip);
+	      handleDigi(fstrip, time_hit, precise_time, smearedPositionX, smearedPositionY, fstrip-centralStrip , localPitch, *_hit );
 	    }
 	  }
-	  // if (deltaw<0.) {
-	  //   if (lstrip < roll->nstrips() ){
-	  //     lstrip++;
-	  //     cls.push_back(lstrip);
-	  //   }
-	  // }else{
-	  //   if (fstrip > 1 ){
-	  //     fstrip--;
-	  //     cls.push_back(fstrip);
-	  //   }
-	  // }
 	}
-      }
-
-      for (std::vector<int>::iterator i=cls.begin(); i!=cls.end();i++){
-	// Check the timing of the adjacent strip
-	if(*i != centralStrip){
-	  if(CLHEP::RandFlat::shoot(engine) < veff[*i-1]){
-	    std::pair<int, int> digi(*i,time_hit);
-            RPCDigi adigi(*i,time_hit);
-            adigi.hasTime(true);
-            adigi.setTime(precise_time);
- 	    if(do_Y)
-	    {
-	  	adigi.hasY(true);
-	  	adigi.setY(smearedPositionY);
-	    }
-            irpc_digis.insert(adigi);
-
-	    theDetectorHitMap.insert(DetectorHitMap::value_type(digi,&(*_hit)));
-	  }
-	} 
-	else {
-	  std::pair<int, int> digi(*i,time_hit);
-	  RPCDigi adigi(*i,time_hit);
-          adigi.hasTime(true);
-          adigi.setTime(precise_time);
-          if(do_Y)
-          {
-		adigi.hasY(true);
-                adigi.setY(smearedPositionY);
-          }
-          irpc_digis.insert(adigi);
-          theDetectorHitMap.insert(DetectorHitMap::value_type(digi,&(*_hit)));
-	}
-      }
+     }
     }
   }
 }
 
-void RPCSimModelTiming::simulateNoise(const RPCRoll* roll,
+void RPCSimModelPseudodigi::simulateNoise(const RPCRoll* roll,
                      CLHEP::HepRandomEngine* engine) 
 {
-//std::cout<<"RPCSimModelTiming::simulateNoise"<<std::endl;
-
-RPCDetId rpcId = roll->id();
-//std::cout<<"RPCSimModelTiming::simulateNoise X1"<<std::endl;
+  RPCDetId rpcId = roll->id();
   RPCGeomServ RPCname(rpcId);
-//std::cout<<"RPCSimModelTiming::simulateNoise X2"<<std::endl;
-// std::cout<<"rpcId.rawId() = "<<rpcId.rawId()<<std::endl;
   std::vector<float> vnoise = (getRPCSimSetUp())->getNoise(rpcId.rawId());
-//std::cout<<"RPCSimModelTiming::simulateNoise X3"<<std::endl;
   std::vector<float> veff = (getRPCSimSetUp())->getEff(rpcId.rawId());
-//std::cout<<"RPCSimModelTiming::simulateNoise X4"<<std::endl;
-  unsigned int nstrips = roll->nstrips();
+  unsigned int nstrips = N_strips;
+  
   double area = 0.0;
-float striplength, xmin,xmax ;
+
+  float striplength, xmin,xmax ;
   if ( rpcId.region() == 0 )
     {
       const RectangularStripTopology* top_ = dynamic_cast<const
@@ -242,40 +204,46 @@ float striplength, xmin,xmax ;
   for(unsigned int j = 0; j < vnoise.size(); ++j){
 
     if(j >= nstrips) break;
-
     double ave =
       vnoise[j]*nbxing*gate*area*1.0e-9*frate/((float)roll->nstrips());
-
+ 
+    ave = ave*((float)roll->nstrips())/N_strips;
+ 
+    
+    
     CLHEP::RandPoissonQ randPoissonQ(*engine, ave);
     N_hits = randPoissonQ.fire();
- for (int i = 0; i < N_hits; i++ ){   
- 
-      
+    for (int i = 0; i < N_hits; i++ ){   
       double precise_time = CLHEP::RandFlat::shoot(engine, (nbxing*gate)/gate);
       int time_hit = (static_cast<int>(precise_time)) - nbxing/2;
-//      std::pair<int, int> digi(j+1,time_hit);
-//      strips.insert(digi);
-            RPCDigi adigi(j+1,time_hit);
-	    adigi.hasTime(true);
-            adigi.setTime(precise_time);
-   if(do_Y)
+      RPCDigi adigi(-200*(j+1),time_hit);
+      adigi.hasTime(true);
+      adigi.setTime(precise_time);
+
+      double positionY = CLHEP::RandFlat::shoot(engine,striplength);
+      positionY-=striplength/2;  
+      float L = xmax-xmin;
+      double positionX = CLHEP::RandFlat::shoot(engine,L);
+      positionX +=xmin;
+
+      std::cout<<"X\t"<<positionX<<"\txmin\t"<<xmin<<"\txman\t"<<xmax<<std::endl;
+      std::cout<<"Y\t"<<positionY<<"\tymin\t"<<-striplength/2<<"\tyman\t"
+		     <<striplength/2<<std::endl;
+      
+      adigi.hasX(true);
+      adigi.setX(positionX);
+      if(do_Y)
 	{
-     double positionY = CLHEP::RandFlat::shoot(engine,striplength);
-positionY-=striplength/2; 
 	  adigi.hasY(true);
 	  adigi.setY(positionY);
-}
-            irpc_digis.insert(adigi);
-
+	}
+      irpc_digis.insert(adigi);
     }
-  }
-
-
-
+  }  
 }
 
 
-int RPCSimModelTiming::getClSize(uint32_t id,float posX, CLHEP::HepRandomEngine* engine)
+int RPCSimModelPseudodigi::getClSize(uint32_t id,float posX, CLHEP::HepRandomEngine* engine)
 {
   std::vector<double> clsForDetId = getRPCSimSetUp()->getCls(id);
 
@@ -324,35 +292,20 @@ int RPCSimModelTiming::getClSize(uint32_t id,float posX, CLHEP::HepRandomEngine*
   return min;
 }
 
-int RPCSimModelTiming::LeftRightNeighbour(const RPCRoll& roll, const LocalPoint & hit_pos, int strip){
-
-  //if left return -1
-  //if right return +1
-
-  int leftStrip =  strip-1;
-  int rightStrip = strip+1;
-
-  if(leftStrip<0)
-    return +1;
-  if( rightStrip > roll.nstrips())
-    return -1;
-
-  //  std::cout<<"((roll.centreOfStrip(strip)).x())\t"<<((roll.centreOfStrip(strip)).x())<<std::endl;
-  //  std::cout<<"((hit_pos.x())\t"<<(hit_pos.x())<<std::endl;
-
-//  double deltaw = fabs((roll.centreOfStrip(strip)).x()-hit_pos.x());
-  double deltawL = fabs((roll.centreOfStrip(leftStrip)).x()-hit_pos.x());
-  double deltawR = fabs((roll.centreOfStrip(rightStrip)).x()-hit_pos.x());
-
-  //  std::cout<<"deltaw\t"<<deltaw<<std::endl;
-  //  std::cout<<"deltawL\t"<<deltawL<<std::endl;
-  //  std::cout<<"deltawR\t"<<deltawR<<std::endl;
-
-  if(deltawL>=deltawR){
-    return +1;
-  }
-  else {
-    return -1;
-  }
-
+void RPCSimModelPseudodigi::handleDigi(int strip, int time_hit, double precise_time, double smearedPositionX, 
+			     double smearedPositionY, int n, double localPitch, const PSimHit & hit )
+{
+  std::pair<int, int> digi(strip,time_hit);
+  RPCDigi adigi(-strip,time_hit);
+  adigi.hasTime(true);
+  adigi.setTime(precise_time);
+  adigi.hasX(true);
+  adigi.setX(smearedPositionX+n*localPitch);
+  if(do_Y)
+    {
+      adigi.hasY(true);
+      adigi.setY(smearedPositionY);
+    }
+  irpc_digis.insert(adigi);
+  theDetectorHitMap.insert(DetectorHitMap::value_type(digi,&hit));
 }
