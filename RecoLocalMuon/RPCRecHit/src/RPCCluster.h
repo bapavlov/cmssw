@@ -20,8 +20,13 @@ class RPCCluster{
   float y() const;
   float yRMS() const;
 
+  bool hasX() const;
+  float firstX() const;
+  float lastX() const;
+
   void addTime(const float time);
   void addY(const float y);
+  void addX(const float x);
   void merge(const RPCCluster& cl);
 
   bool operator<(const RPCCluster& cl) const;
@@ -38,5 +43,7 @@ class RPCCluster{
 
   float sumY, sumY2;
   uint16_t nY;
+
+  float firstX_, lastX_;
 };
 #endif
