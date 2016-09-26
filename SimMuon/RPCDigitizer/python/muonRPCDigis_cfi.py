@@ -76,7 +76,9 @@ if eras.phase2_muon.isChosen():
             Nbxing = cms.int32(9),
             timeJitter = cms.double(1.0),
             IRPC_time_resolution = cms.double(0.1),
-            IRPC_electronics_jitter = cms.double(0.025)
+            IRPC_electronics_jitter = cms.double(0.025),
+	    sigmaY = cms.double(0.7), #math.sqrt((0.025)*(0.025)+(0.025)*(0.025))*0.66*299792458*1e+2*1e-9
+            do_Y_coordinate = cms.bool(False)
             ),       
                                      digiIRPCModel = cms.string('RPCSimModelTiming')
                                      )
