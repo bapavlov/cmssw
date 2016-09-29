@@ -126,47 +126,18 @@ void RPCSimModelPseudodigi::simulate(const RPCRoll* roll,
 
     if (fire < veff[centralStrip-1]) {
 
-      int fstrip=centralStrip;
-      int lstrip=centralStrip;
-
       int clsize = this->getClSize(rpcId.rawId(),posX, engine); // This is for cluster size chamber by chamber
 
+      //For clusterisation debug
+//      std::cout<<"To fix cls =3 for debug !!!"<<std::endl;
+//      clsize = 3;
  
       //      std::vector<int> cls;
       //      cls.push_back(centralStrip);
-    
-      handleDigi(centralStrip, time_hit, precise_time, smearedPositionX, smearedPositionY, 0 , localPitch, *_hit );
-
- 
-      
-      if (clsize > 1){
-	for (int cl = 0; cl < (clsize-1)/2; cl++){
-	  if (centralStrip - cl -1 >= 1  ){
-	    fstrip = centralStrip-cl-1;
-	    handleDigi(fstrip, time_hit, precise_time, smearedPositionX, smearedPositionY, fstrip-centralStrip , localPitch, *_hit );
-	  }
-	  if (centralStrip + cl + 1 <= roll->nstrips() ){
-	    lstrip = centralStrip+cl+1;
-	    handleDigi(lstrip, time_hit, precise_time, smearedPositionX, smearedPositionY, lstrip-centralStrip , localPitch, *_hit );
-	  }
-	}
-	if (clsize%2 == 0 ){
-	  // insert the last strip according to the 
-	  // simhit position in the central strip 
-	  double deltaw=roll->centreOfStrip(centralStrip).x()-entr.x();
-	  if (deltaw<0.) {
-	    if (lstrip < roll->nstrips() ){
-	      lstrip++;
-	      handleDigi(lstrip, time_hit, precise_time, smearedPositionX, smearedPositionY, lstrip-centralStrip , localPitch, *_hit );
-	    }
-	  }else{
-	    if (fstrip > 1 ){
-	      fstrip--;
-	      handleDigi(fstrip, time_hit, precise_time, smearedPositionX, smearedPositionY, fstrip-centralStrip , localPitch, *_hit );
-	    }
-	  }
-	}
-     }
+      double xErr = clsize*localPitch;
+      double yErr = sigmaY*sqrt(12);
+      handleDigi(time_hit, precise_time, smearedPositionX, xErr, smearedPositionY, yErr, * _hit );    
+      //      handleDigi(centralStrip, time_hit, precise_time, smearedPositionX, smearedPositionY, 0*clsize , localPitch, *_hit );
     }
   }
 }
@@ -216,9 +187,9 @@ void RPCSimModelPseudodigi::simulateNoise(const RPCRoll* roll,
     for (int i = 0; i < N_hits; i++ ){   
       double precise_time = CLHEP::RandFlat::shoot(engine, (nbxing*gate)/gate);
       int time_hit = (static_cast<int>(precise_time)) - nbxing/2;
-      RPCDigi adigi(-200*(j+1),time_hit);
-      adigi.hasTime(true);
-      adigi.setTime(precise_time);
+      //      RPCDigi adigi(-200*(j+1),time_hit);
+      //      adigi.hasTime(true);
+      //     adigi.setTime(precise_time);
 
       double positionY = CLHEP::RandFlat::shoot(engine,striplength);
       positionY-=striplength/2;  
@@ -226,18 +197,7 @@ void RPCSimModelPseudodigi::simulateNoise(const RPCRoll* roll,
       double positionX = CLHEP::RandFlat::shoot(engine,L);
       positionX +=xmin;
 
-      std::cout<<"X\t"<<positionX<<"\txmin\t"<<xmin<<"\txman\t"<<xmax<<std::endl;
-      std::cout<<"Y\t"<<positionY<<"\tymin\t"<<-striplength/2<<"\tyman\t"
-		     <<striplength/2<<std::endl;
-      
-      adigi.hasX(true);
-      adigi.setX(positionX);
-      if(do_Y)
-	{
-	  adigi.hasY(true);
-	  adigi.setY(positionY);
-	}
-      irpc_digis.insert(adigi);
+      handleNoiseDigi(time_hit, precise_time, positionX, L/2, positionY, striplength/2);   
     }
   }  
 }
@@ -292,20 +252,51 @@ int RPCSimModelPseudodigi::getClSize(uint32_t id,float posX, CLHEP::HepRandomEng
   return min;
 }
 
-void RPCSimModelPseudodigi::handleDigi(int strip, int time_hit, double precise_time, double smearedPositionX, 
-			     double smearedPositionY, int n, double localPitch, const PSimHit & hit )
+void RPCSimModelPseudodigi::handleDigi(int time_hit, double precise_time, 
+				       double smearedPositionX,
+				       double xErr, double smearedPositionY, 
+				       double yErr, const PSimHit & hit )
 {
-  std::pair<int, int> digi(strip,time_hit);
-  RPCDigi adigi(-strip,time_hit);
+  std::pair<int, int> digi(-10,time_hit);
+  RPCDigi adigi(-10,time_hit);
   adigi.hasTime(true);
   adigi.setTime(precise_time);
   adigi.hasX(true);
-  adigi.setX(smearedPositionX+n*localPitch);
+  adigi.setX(smearedPositionX);
+  adigi.setDeltaX(xErr);
+  
+
+//  std::cout<<"setX\t"<<smearedPositionX<<std::endl;
   if(do_Y)
     {
       adigi.hasY(true);
       adigi.setY(smearedPositionY);
+      adigi.setDeltaY(yErr);
     }
   irpc_digis.insert(adigi);
   theDetectorHitMap.insert(DetectorHitMap::value_type(digi,&hit));
+}
+
+void RPCSimModelPseudodigi::handleNoiseDigi(int time_hit, double precise_time, 
+				       double smearedPositionX,
+				       double xErr, double smearedPositionY, 
+				       double yErr)
+{
+  std::pair<int, int> digi(-10,time_hit);
+  RPCDigi adigi(-10,time_hit);
+  adigi.hasTime(true);
+  adigi.setTime(precise_time);
+  adigi.hasX(true);
+  adigi.setX(smearedPositionX);
+  adigi.setDeltaX(xErr);
+  
+
+  std::cout<<"setX\t"<<smearedPositionX<<std::endl;
+  if(do_Y)
+    {
+      adigi.hasY(true);
+      adigi.setY(smearedPositionY);
+      adigi.setDeltaY(yErr);
+    }
+  irpc_digis.insert(adigi);
 }

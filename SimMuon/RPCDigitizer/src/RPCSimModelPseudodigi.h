@@ -40,9 +40,15 @@ class RPCSimModelPseudodigi : public RPCSim
                      CLHEP::HepRandomEngine*) override;
   int getClSize(uint32_t id,float posX, CLHEP::HepRandomEngine*);
 
-  void handleDigi(int strip, int time_hit, double precise_time, double smearedPositionX, 
-		  double smearedPositionY, int n, double localPitch, const PSimHit & hit );
 
+  void handleDigi(int time_hit, double precise_time, 
+		  double smearedPositionX,
+		  double xErr, double smearedPositionY, 
+		  double yErr, const PSimHit & hit );
+  void handleNoiseDigi(int time_hit, double precise_time, 
+		       double smearedPositionX,
+		       double xErr, double smearedPositionY, 
+		       double yErr);
 
  protected:
   void init(){};
