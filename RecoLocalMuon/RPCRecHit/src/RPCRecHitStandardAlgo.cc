@@ -24,7 +24,8 @@ bool RPCRecHitStandardAlgo::compute(const RPCRoll& roll,
   float x, xx;
   if ( cluster.hasX() ) {
     x = (cluster.firstX()+cluster.lastX())/2;
-    const float dx = cluster.lastX()-cluster.firstX();
+//    const float dx = cluster.lastX()-cluster.firstX();
+    const float dx = cluster.DeltaX();
     xx = dx*dx/12;
   }
   else {

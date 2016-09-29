@@ -8,14 +8,16 @@ using namespace std;
 RPCCluster::RPCCluster():
   fstrip(0), lstrip(0), bunchx(0),
   sumTime(0), sumTime2(0), nTime(0), sumY(0), sumY2(0), nY(0),
-  firstX_(-1), lastX_(-1)
+//  firstX_(-1), lastX_(-1)
+  firstX_(1000), lastX_(-1000)
 {
 }
 
 RPCCluster::RPCCluster(int fs, int ls, int bx) :
   fstrip(fs), lstrip(ls), bunchx(bx),
   sumTime(0), sumTime2(0), nTime(0), sumY(0), sumY2(0), nY(0),
-  firstX_(-1), lastX_(-1)
+//  firstX_(-1), lastX_(-1)
+  firstX_(1000), lastX_(-1000)
 {
 }
 
@@ -34,9 +36,12 @@ bool RPCCluster::hasY() const { return nY > 0; }
 float RPCCluster::y() const { return hasY() ? sumY/nY : 0; }
 float RPCCluster::yRMS() const { return hasY() ? sqrt((sumY2*nY - sumY*sumY)/nY) : -1; }
 
-bool RPCCluster::hasX() const { return firstX_ > 0 and lastX_ > 0; }
+//bool RPCCluster::hasX() const { return firstX_ > 0 and lastX_ > 0; }
+bool RPCCluster::hasX() const { return !((firstX_==1000) or (lastX_==-1000)); }
 float RPCCluster::firstX() const { return firstX_; }
 float RPCCluster::lastX() const { return lastX_; }
+float RPCCluster::DeltaX() const { return theDeltaX; }
+void RPCCluster::DeltaX(float dX) { theDeltaX=dX; }
 
 bool RPCCluster::isAdjacent(const RPCCluster& cl) const
 {

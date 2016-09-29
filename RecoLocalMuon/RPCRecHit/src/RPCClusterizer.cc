@@ -11,6 +11,8 @@ RPCClusterContainer RPCClusterizer::doAction(const RPCDigiCollection::Range& dig
     RPCCluster cl(digi->strip(), digi->strip(), digi->bx());
     if ( digi->hasTime() ) cl.addTime(digi->time());
     if ( digi->hasY() ) cl.addY(digi->coordinateY());
+    if (digi->hasX()) cl.addX(digi->coordinateX());
+    if (digi->deltaX()>0) cl.DeltaX(digi->deltaX());	
     initialCluster.insert(cl);
   }
   if ( initialCluster.empty() ) return finalCluster; // Confirm the collection is valid

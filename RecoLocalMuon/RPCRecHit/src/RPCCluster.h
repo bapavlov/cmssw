@@ -23,6 +23,8 @@ class RPCCluster{
   bool hasX() const;
   float firstX() const;
   float lastX() const;
+  float DeltaX() const; 
+  void DeltaX(float dX);
 
   void addTime(const float time);
   void addY(const float y);
@@ -45,5 +47,6 @@ class RPCCluster{
   uint16_t nY;
 
   float firstX_, lastX_;
+  float theDeltaX;
 };
 #endif
