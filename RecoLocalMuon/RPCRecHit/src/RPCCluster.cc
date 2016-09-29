@@ -7,13 +7,15 @@ using namespace std;
 
 RPCCluster::RPCCluster():
   fstrip(0), lstrip(0), bunchx(0),
-  sumTime(0), sumTime2(0), nTime(0), sumY(0), sumY2(0), nY(0)
+  sumTime(0), sumTime2(0), nTime(0), sumY(0), sumY2(0), nY(0),
+  firstX_(-1), lastX_(-1)
 {
 }
 
 RPCCluster::RPCCluster(int fs, int ls, int bx) :
   fstrip(fs), lstrip(ls), bunchx(bx),
-  sumTime(0), sumTime2(0), nTime(0), sumY(0), sumY2(0), nY(0)
+  sumTime(0), sumTime2(0), nTime(0), sumY(0), sumY2(0), nY(0),
+  firstX_(-1), lastX_(-1)
 {
 }
 
@@ -31,6 +33,10 @@ float RPCCluster::timeRMS() const { return hasTime() ? sqrt((sumTime2*nTime - su
 bool RPCCluster::hasY() const { return nY > 0; }
 float RPCCluster::y() const { return hasY() ? sumY/nY : 0; }
 float RPCCluster::yRMS() const { return hasY() ? sqrt((sumY2*nY - sumY*sumY)/nY) : -1; }
+
+bool RPCCluster::hasX() const { return firstX_ > 0 and lastX_ > 0; }
+float RPCCluster::firstX() const { return firstX_; }
+float RPCCluster::lastX() const { return lastX_; }
 
 bool RPCCluster::isAdjacent(const RPCCluster& cl) const
 {
@@ -52,6 +58,12 @@ void RPCCluster::addY(const float y)
   sumY2 += y*y;
 }
 
+void RPCCluster::addX(const float x)
+{
+  firstX_ = std::min(firstX_, x);
+  lastX_ = std::max(lastX_, x);
+}
+
 void RPCCluster::merge(const RPCCluster& cl)
 {
   if ( !this->isAdjacent(cl) ) return;
@@ -65,6 +77,9 @@ void RPCCluster::merge(const RPCCluster& cl)
   nY    += cl.nY;
   sumY  += cl.sumY;
   sumY2 += cl.sumY2;
+
+  firstX_ = std::min(firstX_, cl.firstX_);
+  lastX_ = std::max(lastX_, cl.lastX_);
 }
 
 bool RPCCluster::operator<(const RPCCluster& cl) const
