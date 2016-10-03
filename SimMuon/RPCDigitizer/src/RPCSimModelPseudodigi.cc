@@ -135,7 +135,7 @@ void RPCSimModelPseudodigi::simulate(const RPCRoll* roll,
       //      std::vector<int> cls;
       //      cls.push_back(centralStrip);
       double xErr = clsize*localPitch;
-      double yErr = sigmaY*sqrt(12);
+      double yErr = sigmaY; //*sqrt(12);
       handleDigi(time_hit, precise_time, smearedPositionX, xErr, smearedPositionY, yErr, * _hit );    
       //      handleDigi(centralStrip, time_hit, precise_time, smearedPositionX, smearedPositionY, 0*clsize , localPitch, *_hit );
     }
