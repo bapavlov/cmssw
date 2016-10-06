@@ -120,10 +120,11 @@ void RPCSimModelPseudodigi::simulate(const RPCRoll* roll,
     float fire = CLHEP::RandFlat::shoot(engine);
     
     float smearedOffsetX = CLHEP::RandGaussQ::shoot(engine,_hit->localPosition().x(),localPitch/sqrt(12));
-    float smearedPositionX = _hit->localPosition().x()+smearedOffsetX;
+//    float smearedPositionX = _hit->localPosition().x()+smearedOffsetX;
+    float smearedPositionX = smearedOffsetX;
     float smearedOffsetY = CLHEP::RandGaussQ::shoot(engine,_hit->localPosition().y(),sigmaY);
-    float smearedPositionY = _hit->localPosition().y()+smearedOffsetY;
-
+//    float smearedPositionY = _hit->localPosition().y()+smearedOffsetY;
+    float smearedPositionY = smearedOffsetY;
     if (fire < veff[centralStrip-1]) {
 
       int clsize = this->getClSize(rpcId.rawId(),posX, engine); // This is for cluster size chamber by chamber
