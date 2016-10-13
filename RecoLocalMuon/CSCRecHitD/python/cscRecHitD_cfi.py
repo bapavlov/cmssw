@@ -60,7 +60,8 @@ csc2DRecHits = cms.EDProducer("CSCRecHitDProducer",
     #  To be set once wire digis have proper timing info:
     CSCstripWireDeltaTime = cms.int32(8),
     # to be deleted
-    CSCStripClusterSize = cms.untracked.int32(3)
+    CSCStripClusterSize = cms.untracked.int32(3),
+    stationToUse =  cms.untracked.int32(3)
 )
 
 ##

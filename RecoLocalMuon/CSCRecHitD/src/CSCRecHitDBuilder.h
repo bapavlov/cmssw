@@ -96,6 +96,9 @@ class CSCRecHitDBuilder
    * Cache conditions data for current event - cannot be const because we need to update bad channels words
    */
   CSCRecoConditions* recoConditions_;
+
+  int stationToUse_;
+
 };
 
 #endif
