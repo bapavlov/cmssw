@@ -60,5 +60,10 @@ class RPCRecHitBaseAlgo {
                        LocalPoint& Point,
                        LocalError& error,
                        float& time, float& timeErr) const = 0;
+
+ private:
+  
+  int stationToUse_;
+
 };
 #endif
