@@ -268,7 +268,8 @@ float striplength, xmin,xmax ;
 positionY-=striplength/2; 
 	  adigi.hasY(true);
 	  adigi.setY(positionY);
-          adigi.setDeltaY(striplength/sqrt(12.));
+//          adigi.setDeltaY(striplength/sqrt(12.));
+          adigi.setDeltaY(sigmaY);
 }
             irpc_digis.insert(adigi);
 
