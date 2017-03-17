@@ -39,6 +39,12 @@
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
 #include "CondFormats/MuonSystemAging/interface/MuonSystemAging.h"
 #include "CondFormats/DataRecord/interface/MuonSystemAgingRcd.h"
+#include "Geometry/RPCGeometry/interface/RPCGeometry.h"
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/RandomNumberGenerator.h"
+#include "CLHEP/Random/RandomEngine.h"
 //
 // class declaration
 //
@@ -63,7 +69,8 @@ class RPCChamberMasker : public edm::EDProducer {
       // ----------member data ---------------------------
   edm::InputTag digiTag_;
   edm::EDGetTokenT<RPCDigiCollection> m_digiTag;
-  std::vector<int> m_maskedRPCIDs;
+//  std::vector<int> m_maskedRPCIDs;
+  std::map<RPCDetId, float> m_ChEffs;
 };
 
 //
@@ -83,7 +90,7 @@ RPCChamberMasker::RPCChamberMasker(const edm::ParameterSet& iConfig) :
 {
    m_digiTag = consumes<RPCDigiCollection>(digiTag_);
  
-  //std::cout<<"RPCChamberMasker::RPCChamberMasker"<<std::endl;
+   //  std::cout<<"RPCChamberMasker::RPCChamberMasker"<<std::endl;
   produces<RPCDigiCollection>();
 
 /*  std::cout<<"IDs of masked RPCs"<<std::endl;
@@ -115,6 +122,10 @@ void
 RPCChamberMasker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   using namespace edm;
+  edm::Service<edm::RandomNumberGenerator> randGenService;
+  CLHEP::HepRandomEngine& randGen = randGenService->getEngine(iEvent.streamID());
+
+
   std::unique_ptr<RPCDigiCollection> filteredDigis(new RPCDigiCollection());
   if (!digiTag_.label().empty())
     {
@@ -127,13 +138,13 @@ RPCChamberMasker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       for (; rpcLayerIdIt != rpcLayerIdEnd; ++rpcLayerIdIt)
 	  {
           int id = ((*rpcLayerIdIt).first).rawId();
-          
-          if(std::find(m_maskedRPCIDs.begin(),m_maskedRPCIDs.end(),id) == m_maskedRPCIDs.end()){
+//          if(std::find(m_maskedRPCIDs.begin(),m_maskedRPCIDs.end(),id) == m_maskedRPCIDs.end()){
+         auto chEffIt = m_ChEffs.find(id);
+         if ((chEffIt != m_ChEffs.end()) && (randGen.flat() <= chEffIt->second))
               filteredDigis->put((*rpcLayerIdIt).second,(*rpcLayerIdIt).first);
           }
       }
-    } 
-
+   
  
       iEvent.put(std::move(filteredDigis));
 }
@@ -155,12 +166,41 @@ RPCChamberMasker::endJob() {
 void
 RPCChamberMasker::beginRun(edm::Run const& run, edm::EventSetup const& iSetup)
 {
-  edm::ESHandle<MuonSystemAging> mcData;
-  iSetup.get<MuonSystemAgingRcd>().get(mcData);
-  const MuonSystemAging* myMC=mcData.product();
-  std::vector<int> mcV = myMC->m_RPCchambers;
-  for(unsigned int i = 0; i < mcV.size();++i)m_maskedRPCIDs.push_back(mcV.at(i));
+//  edm::ESHandle<MuonSystemAging> mcData;
+//  iSetup.get<MuonSystemAgingRcd>().get(mcData);
+//  const MuonSystemAging* myMC=mcData.product();
+//  std::vector<int> mcV = myMC->m_RPCchambers;
+//std::map<RPCDetId, float> m_ChEffs;
+//  for(unsigned int i = 0; i < mcV.size();++i)m_maskedRPCIDs.push_back(mcV.at(i));
 
+ m_ChEffs.clear();
+
+  edm::ESHandle<RPCGeometry> rpcGeom;
+  iSetup.get<MuonGeometryRecord>().get(rpcGeom);
+
+  edm::ESHandle<MuonSystemAging> agingObj;
+  iSetup.get<MuonSystemAgingRcd>().get(agingObj);
+
+  const auto rolls = rpcGeom->rolls();
+  
+  for ( const auto * roll : rolls)
+   {
+RPCDetId    rollId    = roll->id();
+     uint32_t     rollRawId = rollId.rawId();
+
+     Float_t chamberEff = 1.; 
+     for ( auto & agingPair : agingObj->m_RPCChambEffs)
+       {
+
+         if ( agingPair.first == rollRawId)
+           {
+             chamberEff = agingPair.second;
+             break;
+           }
+
+       }
+     m_ChEffs[rollId] = chamberEff;
+   }
 }
 
  

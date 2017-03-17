@@ -16,7 +16,8 @@ class MuonSystemAging {
     public:
     MuonSystemAging();
     ~MuonSystemAging(){}
-    std::vector<int>  m_RPCchambers;
+//    std::vector<int>  m_RPCchambers;
+    std::map<unsigned int, float>  m_RPCChambEffs;
     std::map<unsigned int, float>  m_DTChambEffs;
     double m_CSCineff;
    COND_SERIALIZABLE;

@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from DPGAnalysis.MuonSysAging.RPCChamberMasker_cfi import RPCChamberMasker
 
 #def appendChamberMaskerAtUnpacking(process, doDigis, doTrigger, chambRegEx):
-def appendRPCChamberMaskerAtUnpacking(process, doDigis, maskedRPCs):
+def appendRPCChamberMaskerAtUnpacking(process, doDigis):
 
     if doDigis and hasattr(process,'muonRPCDigis') :
 
@@ -11,8 +11,17 @@ def appendRPCChamberMaskerAtUnpacking(process, doDigis, maskedRPCs):
 
         process.preRPCDigis = process.muonRPCDigis.clone()
         process.muonRPCDigis = RPCChamberMasker.clone()
-        if len(maskedRPCs) > 0 :
-		process.muonRPCDigis.maskedRPCIDs = maskedRPCs
+
+        if hasattr(process,"RandomNumberGeneratorService") :
+            process.RandomNumberGeneratorService.muonRPCDigis = cms.PSet(
+                initialSeed = cms.untracked.uint32(789342)
+                )
+        else :
+            process.RandomNumberGeneratorService = cms.Service(
+                "RandomNumberGeneratorService",
+                muonRPCDigis = cms.PSet(initialSeed = cms.untracked.uint32(789342))
+                )
+
 	process.filteredRPCDigiSequence = cms.Sequence(process.preRPCDigis + process.muonRPCDigis)
 #        process.RawToDigi.replace(process.muonRPCDigis, process.filteredDigiSequence)
         process.RawToDigi.replace(process.muonRPCDigis, process.filteredRPCDigiSequence)

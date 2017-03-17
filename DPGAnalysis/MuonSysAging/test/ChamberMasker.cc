@@ -55,9 +55,12 @@ private:
   
   void createDtAgingMap(edm::ESHandle<DTGeometry> & dtGeom);
   
-  std::vector<int> m_maskedRPCIDs;
+//  std::vector<int> m_maskedRPCIDs;
+  std::vector<std::string> m_maskedRPCIDs;
   std::vector<std::string> m_ChamberRegEx;
+  std::vector<std::string> m_RPCRegEx;
   std::map<uint32_t, float> m_DTChambEffs;
+  std::map<uint32_t, float> m_RPCChambEffs;
   double m_ineffCSC;      
   
   // ----------member data ---------------------------
@@ -79,9 +82,10 @@ ChamberMasker::ChamberMasker(const edm::ParameterSet& iConfig)
 {  
    m_ineffCSC     = iConfig.getParameter<double>("CSCineff"); 
    m_ChamberRegEx = iConfig.getParameter<std::vector<std::string>>("chamberRegEx"); 
-   for ( auto rpc_ids : iConfig.getParameter<std::vector<int>>("maskedRPCIDs"))
+   m_RPCRegEx = iConfig.getParameter<std::vector<std::string>>("maskedRPCIDs");   
+for ( auto rpc_ids : m_RPCRegEx)
     {
-      m_maskedRPCIDs.push_back(rpc_ids);
+//@@@      m_maskedRPCIDs.push_back(rpc_ids);
       std::cout << rpc_ids << std::endl;
     }
 
@@ -128,11 +132,11 @@ ChamberMasker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    MuonSystemAging* muonSystAging = new MuonSystemAging();
    for(unsigned int i = 0; i < m_maskedRPCIDs.size();++i){
-     muonSystAging->m_RPCchambers.push_back(m_maskedRPCIDs.at(i));
+//@@@     muonSystAging->m_RPCchambers.push_back(m_maskedRPCIDs.at(i));
    }
 
    muonSystAging->m_DTChambEffs = m_DTChambEffs;
-
+   muonSystAging->m_RPCChambEffs = m_RPCChambEffs;
    muonSystAging->m_CSCineff = m_ineffCSC; 
    edm::Service<cond::service::PoolDBOutputService> poolDbService;
    if( poolDbService.isAvailable() ) poolDbService->writeOne( muonSystAging, poolDbService->currentTime(),"MuonSystemAgingRcd" );
@@ -188,7 +192,17 @@ ChamberMasker::createDtAgingMap(edm::ESHandle<DTGeometry> & dtGeom)
      std::cout << chId << " " << eff << std::endl;
          
    }
-  
+ 
+    for (auto & chRegExStr : m_RPCRegEx )
+       {
+
+std::string id = chRegExStr.substr(0, chRegExStr.find(":"));
+std::string eff = chRegExStr.substr(id.size()+1, chRegExStr.find(":"));
+
+std::cout<<id<<'\t'<<eff<<std::endl;
+m_RPCChambEffs[std::atoi(id.c_str())] = std::atof(eff.c_str());
+}
+ 
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------

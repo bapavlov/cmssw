@@ -21,6 +21,7 @@
   <use name="Geometry/CSCGeometry"/>
   <use name="Geometry/Records"/>
   <use name="CondFormats/DataRecord"/>
+  <use name="Geometry/RPCGeometry"/>
 
   <flags EDM_PLUGIN="1"/>
 </library>
