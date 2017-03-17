@@ -388,16 +388,16 @@ recoMuonVMuAssoc_tgt.primaryVertex = 'offlinePrimaryVertices'
 
 # Muon validation sequences
 muonValidation_seq = cms.Sequence(
-    probeTracks_seq + tpToTkMuonAssociation + trkProbeTrackVMuonAssoc
-    +trackAssociatorByHits + tpToTkmuTrackAssociation + trkMuonTrackVTrackAssoc
-    +seedsOfSTAmuons_seq + tpToStaSeedAssociation + staSeedTrackVMuonAssoc
-    +tpToStaMuonAssociation + staMuonTrackVMuonAssoc
+#    probeTracks_seq + tpToTkMuonAssociation + trkProbeTrackVMuonAssoc
+#    +trackAssociatorByHits + tpToTkmuTrackAssociation + trkMuonTrackVTrackAssoc
+#    +seedsOfSTAmuons_seq + tpToStaSeedAssociation + staSeedTrackVMuonAssoc
+    tpToStaMuonAssociation + staMuonTrackVMuonAssoc
     +tpToStaUpdMuonAssociation + staUpdMuonTrackVMuonAssoc
-    +extractedMuonTracks_seq + tpToGlbMuonAssociation + glbMuonTrackVMuonAssoc
-    +muonAssociatorByHitsNoSimHitsHelperTrk +recoMuonVMuAssoc_trk
-    +muonAssociatorByHitsNoSimHitsHelperStandalone +recoMuonVMuAssoc_sta
-    +muonAssociatorByHitsNoSimHitsHelperGlobal +recoMuonVMuAssoc_glb
-    +muonAssociatorByHitsNoSimHitsHelperTight +recoMuonVMuAssoc_tgt
+#    +extractedMuonTracks_seq + tpToGlbMuonAssociation + glbMuonTrackVMuonAssoc
+#    +muonAssociatorByHitsNoSimHitsHelperTrk +recoMuonVMuAssoc_trk
+#    +muonAssociatorByHitsNoSimHitsHelperStandalone +recoMuonVMuAssoc_sta
+#    +muonAssociatorByHitsNoSimHitsHelperGlobal +recoMuonVMuAssoc_glb
+#    +muonAssociatorByHitsNoSimHitsHelperTight +recoMuonVMuAssoc_tgt
 )
 
 muonValidation_reduced_seq = cms.Sequence(
@@ -441,8 +441,13 @@ muonValidationCosmic_seq = cms.Sequence(
 )
 
 # The full offline muon validation sequence
+#recoMuonValidation = cms.Sequence(
+#    muonValidation_seq + muonValidationTEV_seq + muonValidationRefit_seq + muonValidationDisplaced_seq
+#)
+
+
 recoMuonValidation = cms.Sequence(
-    muonValidation_seq + muonValidationTEV_seq + muonValidationRefit_seq + muonValidationDisplaced_seq
+    muonValidation_seq
 )
 
 # no displaces in fastsim
