@@ -2,7 +2,31 @@ import FWCore.ParameterSet.Config as cms
 
 from DPGAnalysis.MuonSysAging.RPCChamberMasker_cfi import RPCChamberMasker
 
-#def appendChamberMaskerAtUnpacking(process, doDigis, doTrigger, chambRegEx):
+# appendRPCChamberMaskerAtReco to be used for PhaseII
+# tested with: runTheMatrix.py  -ne -w upgrade -l 21208.0
+def appendRPCChamberMaskerAtReco(process, doDigis):
+    if doDigis and hasattr(process,'rpcRecHits') :
+        print "[appendChamberMasker] : Found rpcRecHits, applying filter"
+        process.rpcRecHits = process.rpcRecHits.clone()
+        process.preFilter = RPCChamberMasker.clone()
+        process.rpcRecHits.rpcDigiLabel = cms.InputTag('preFilter')
+        process.filteredRPCDigiSequence = cms.Sequence(process.preFilter+process.rpcRecHits)
+        process.reconstruction_step.replace(process.rpcRecHits,process.filteredRPCDigiSequence)
+        if hasattr(process,"RandomNumberGeneratorService") :
+            process.RandomNumberGeneratorService.preFilter = cms.PSet(
+                initialSeed = cms.untracked.uint32(789342)
+                )
+        else :
+            process.RandomNumberGeneratorService = cms.Service(
+                "RandomNumberGeneratorService",
+                preFilter = cms.PSet(initialSeed = cms.untracked.uint32(789342))
+                )
+
+        return process
+
+
+#appendRPCChamberMaskerAtUnpacking to be used for Run2
+#tested with: runTheMatrix.py -ne -l 1321.0 --command="-n 200 --no_exec"
 def appendRPCChamberMaskerAtUnpacking(process, doDigis):
 
     if doDigis and hasattr(process,'muonRPCDigis') :

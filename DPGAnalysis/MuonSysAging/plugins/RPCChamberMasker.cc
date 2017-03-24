@@ -63,14 +63,13 @@ class RPCChamberMasker : public edm::EDProducer {
       
       virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
       virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-      //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-      //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
       // ----------member data ---------------------------
   edm::InputTag digiTag_;
   edm::EDGetTokenT<RPCDigiCollection> m_digiTag;
-//  std::vector<int> m_maskedRPCIDs;
   std::map<RPCDetId, float> m_ChEffs;
+  bool theRE31_off;
+  bool theRE41_off; 
 };
 
 //
@@ -88,19 +87,11 @@ class RPCChamberMasker : public edm::EDProducer {
 RPCChamberMasker::RPCChamberMasker(const edm::ParameterSet& iConfig) : 
   digiTag_(iConfig.getParameter<edm::InputTag>("digiTag") )
 {
-   m_digiTag = consumes<RPCDigiCollection>(digiTag_);
- 
-   //  std::cout<<"RPCChamberMasker::RPCChamberMasker"<<std::endl;
+  m_digiTag = consumes<RPCDigiCollection>(digiTag_);
   produces<RPCDigiCollection>();
 
-/*  std::cout<<"IDs of masked RPCs"<<std::endl;
-  for ( auto rpc_ids : iConfig.getParameter<std::vector<int>>("maskedRPCIDs"))
-    {
-      m_maskedRPCIDs.push_back(rpc_ids);
-      std::cout<<rpc_ids<<std::endl;
-    }
-*/
-  
+  theRE31_off = iConfig.getParameter<bool>("descopeRE31");
+  theRE41_off =iConfig.getParameter<bool>("descopeRE41");
 }
 
 
@@ -125,7 +116,7 @@ RPCChamberMasker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   edm::Service<edm::RandomNumberGenerator> randGenService;
   CLHEP::HepRandomEngine& randGen = randGenService->getEngine(iEvent.streamID());
 
-
+  
   std::unique_ptr<RPCDigiCollection> filteredDigis(new RPCDigiCollection());
   if (!digiTag_.label().empty())
     {
@@ -136,17 +127,14 @@ RPCChamberMasker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       RPCDigiCollection::DigiRangeIterator rpcLayerIdEnd = rpcDigis->end();
       
       for (; rpcLayerIdIt != rpcLayerIdEnd; ++rpcLayerIdIt)
-	  {
+	{
           int id = ((*rpcLayerIdIt).first).rawId();
-//          if(std::find(m_maskedRPCIDs.begin(),m_maskedRPCIDs.end(),id) == m_maskedRPCIDs.end()){
-         auto chEffIt = m_ChEffs.find(id);
-         if ((chEffIt != m_ChEffs.end()) && (randGen.flat() <= chEffIt->second))
-              filteredDigis->put((*rpcLayerIdIt).second,(*rpcLayerIdIt).first);
-          }
-      }
-   
- 
-      iEvent.put(std::move(filteredDigis));
+	  auto chEffIt = m_ChEffs.find(id);
+	  if ((chEffIt != m_ChEffs.end()) && (randGen.flat() <= chEffIt->second))
+	    filteredDigis->put((*rpcLayerIdIt).second,(*rpcLayerIdIt).first);
+	}
+    }
+  iEvent.put(std::move(filteredDigis));
 }
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -166,41 +154,40 @@ RPCChamberMasker::endJob() {
 void
 RPCChamberMasker::beginRun(edm::Run const& run, edm::EventSetup const& iSetup)
 {
-//  edm::ESHandle<MuonSystemAging> mcData;
-//  iSetup.get<MuonSystemAgingRcd>().get(mcData);
-//  const MuonSystemAging* myMC=mcData.product();
-//  std::vector<int> mcV = myMC->m_RPCchambers;
-//std::map<RPCDetId, float> m_ChEffs;
-//  for(unsigned int i = 0; i < mcV.size();++i)m_maskedRPCIDs.push_back(mcV.at(i));
-
- m_ChEffs.clear();
-
+  m_ChEffs.clear();
+  
   edm::ESHandle<RPCGeometry> rpcGeom;
   iSetup.get<MuonGeometryRecord>().get(rpcGeom);
-
+  
   edm::ESHandle<MuonSystemAging> agingObj;
   iSetup.get<MuonSystemAgingRcd>().get(agingObj);
-
+  
   const auto rolls = rpcGeom->rolls();
   
   for ( const auto * roll : rolls)
-   {
-RPCDetId    rollId    = roll->id();
-     uint32_t     rollRawId = rollId.rawId();
-
-     Float_t chamberEff = 1.; 
-     for ( auto & agingPair : agingObj->m_RPCChambEffs)
-       {
-
-         if ( agingPair.first == rollRawId)
-           {
-             chamberEff = agingPair.second;
-             break;
-           }
-
-       }
-     m_ChEffs[rollId] = chamberEff;
-   }
+    {
+      RPCDetId rollId = roll->id();
+      uint32_t rollRawId = rollId.rawId();
+      
+      Float_t chamberEff = 1.; 
+      for ( auto & agingPair : agingObj->m_RPCChambEffs)
+	{
+	  
+	  if ( agingPair.first == rollRawId)
+	    {
+	      chamberEff = agingPair.second;
+	      break;
+	    }
+	  
+	  if(theRE31_off && ( roll->isIRPC() && (rollId.station()==3) ) ){
+	    chamberEff = 0;
+	  }
+	  if(theRE41_off && ( roll->isIRPC() && (rollId.station()==4) ) ){
+	    chamberEff = 0;
+	  }	   
+	}
+      m_ChEffs[rollId] = chamberEff;
+    }
 }
 
  
@@ -210,23 +197,6 @@ void
 RPCChamberMasker::endRun(edm::Run const&, edm::EventSetup const&)
 {
 }
-
- 
-// ------------ method called when starting to processes a luminosity block  ------------
-/*
-void
-RPCChamberMasker::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
- 
-// ------------ method called when ending the processing of a luminosity block  ------------
-/*
-void
-RPCChamberMasker::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-{
-}
-*/
  
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
