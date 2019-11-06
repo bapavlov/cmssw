@@ -38,7 +38,7 @@
   <Tubs name="RT4H" rMin="1.79*m  " rMax="3.29*m  " dz="2*cm " startPhi="-13*deg" deltaPhi="26*deg"/>
   <Trd1 name="RFHX" dz="72.5*cm " dy1="5.5*mm " dy2="5.5*mm " dx1="31.56*cm " dx2="57.13*cm " />
   <Trd1 name="RHHX" dz="72.45*cm " dy1="5*mm " dy2="5*mm " dx1="31.56*cm " dx2="57.13*cm " />
-  <Trd1 name="REH1" dz="70.25*cm" dy1="1*mm" dy2="1*mm" dx1="31.52" dx2="57.0*cm" />
+  <Trd1 name="REH1" dz="70.25*cm" dy1="1*mm" dy2="1*mm" dx1="31.52*cm" dx2="57.0*cm" />
  </SolidSection>
 
  <LogicalPartSection label="rpcf.xml">
