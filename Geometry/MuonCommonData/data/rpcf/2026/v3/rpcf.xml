@@ -411,7 +411,7 @@
   <PosPart copyNumber="1">
    <rParent name="rpcf:RHGX"/>
    <rChild name="rpcf:REG1"/>
-   <Translation x="0*fm " y="0*fm " z="66.0*cm " />
+   <Translation x="0*fm " y="0*fm " z="0*cm " />
   </PosPart>
 
 
@@ -453,7 +453,7 @@
   <PosPart copyNumber="1">
    <rParent name="rpcf:RHHX"/>
    <rChild name="rpcf:REH1"/>
-   <Translation x="0*fm " y="0*fm " z="57.4*cm " />
+   <Translation x="0*fm " y="0*fm " z="0*cm " />
   </PosPart>
 
 </PosPartSection>
