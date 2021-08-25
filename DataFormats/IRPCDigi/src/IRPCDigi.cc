@@ -9,39 +9,39 @@
  *
  */
 
-#include "DataFormats/RPCDigi/interface/RPCDigi.h"
+#include "DataFormats/IRPCDigi/interface/IRPCDigi.h"
 #include <iostream>
 
-RPCDigi::RPCDigi(int strip, int bx)
+IRPCDigi::IRPCDigi(int strip, int bx)
     : strip_(strip),
       bx_(bx),
       sbx_(0){}
 
-RPCDigi::RPCDigi(int strip, int bx, int sbx)
+IRPCDigi::IRPCDigi(int strip, int bx, int sbx)
   : strip_(strip),
     bx_(bx),
     sbx_(sbx){}
 
-RPCDigi::RPCDigi()
+IRPCDigi::IRPCDigi()
     : strip_(0),
       bx_(0),
       sbx_(0) {}
 
 // Comparison
-bool RPCDigi::operator==(const RPCDigi& digi) const {
+bool IRPCDigi::operator==(const IRPCDigi& digi) const {
   if (strip_ != digi.strip() || bx_ != digi.bx())
     return false;
   return true;
 }
 
 ///Precedence operator
-bool RPCDigi::operator<(const RPCDigi& digi) const {
+bool IRPCDigi::operator<(const IRPCDigi& digi) const {
   if (digi.bx() == this->bx())
     return digi.strip() < this->strip();
   else
     return digi.bx() < this->bx();
 }
 
-std::ostream& operator<<(std::ostream& o, const RPCDigi& digi) { return o << " " << digi.strip() << " " << digi.bx(); }
+std::ostream& operator<<(std::ostream& o, const IRPCDigi& digi) { return o << " " << digi.strip() << " " << digi.bx(); }
 
-void RPCDigi::print() const { std::cout << "Strip " << strip() << " bx " << bx() << std::endl; }
+void IRPCDigi::print() const { std::cout << "Strip " << strip() << " bx " << bx() << std::endl; }

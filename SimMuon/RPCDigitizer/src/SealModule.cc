@@ -1,6 +1,7 @@
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "SimMuon/RPCDigitizer/src/RPCDigiProducer.h"
+#include "SimMuon/RPCDigitizer/src/IRPCDigiProducer.h"
 #include "SimMuon/RPCDigitizer/src/RPCandIRPCDigiProducer.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimFactory.h"
 
@@ -15,7 +16,9 @@
 #include "SimMuon/RPCDigitizer/src/RPCSimModelTiming.h"
 #include "SimMuon/RPCDigitizer/src/RPCNeutronWriter.h"
 
+
 DEFINE_FWK_MODULE(RPCDigiProducer);
+DEFINE_FWK_MODULE(IRPCDigiProducer);
 DEFINE_FWK_MODULE(RPCandIRPCDigiProducer);
 
 DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimAverageNoiseEffCls, "RPCSimAverageNoiseEffCls");
