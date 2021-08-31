@@ -29,6 +29,16 @@ public:
   int bx() const { return bx_; }
   int sbx() const { return sbx_; }
   double time() const { return 0; } //to be implemented
+
+
+  //!!!
+  bool hasTime() const {return true;} // to be removed                         
+  bool hasX() const {return false;} // to be removed                           
+  bool hasY() const {return false;} // to be removed                        
+
+  float coordinateX() const {return 0;}  // to be removed 
+  float coordinateY() const {return 0;}  // to be removed 
+
   
 
 private:

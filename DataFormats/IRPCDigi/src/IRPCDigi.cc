@@ -14,22 +14,32 @@
 
 IRPCDigi::IRPCDigi(int strip, int bx)
     : strip_(strip),
-      bx_(bx),
-      sbx_(0){}
+      bxLR_(bx),
+      sbxLR_(0){}
 
 IRPCDigi::IRPCDigi(int strip, int bx, int sbx)
   : strip_(strip),
-    bx_(bx),
-    sbx_(sbx){}
+    bxLR_(bx),
+    sbxLR_(sbx){}
 
 IRPCDigi::IRPCDigi()
     : strip_(0),
-      bx_(0),
-      sbx_(0) {}
+      bxLR_(0),
+      sbxLR_(0) {}
+
+IRPCDigi::IRPCDigi(int strip, int bxLR, int bxHR, int sbxLR, int sbxHR, float tLR, float tHR)
+  : strip_(strip),
+    bxLR_(bxLR),
+    bxHR_(bxHR),
+    sbxLR_(sbxLR),
+    sbxHR_(sbxHR),
+    tLR_(tLR),
+    tHR_(tHR) {}
+
 
 // Comparison
 bool IRPCDigi::operator==(const IRPCDigi& digi) const {
-  if (strip_ != digi.strip() || bx_ != digi.bx())
+  if (strip_ != digi.strip() || bxLR_ != digi.bx())
     return false;
   return true;
 }
