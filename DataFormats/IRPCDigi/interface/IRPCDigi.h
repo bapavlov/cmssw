@@ -1,7 +1,7 @@
-#ifndef RPCDigi_RPCDigi_h
-#define RPCDigi_RPCDigi_h
+#ifndef IRPCDigi_IRPCDigi_h
+#define IRPCDigi_IRPCDigi_h
 
-/** \class RPCDigi
+/** \class IRPCDigi
  *
  * Digi for Rsisitive Plate Chamber
  *  
@@ -16,14 +16,14 @@
 #include <cstdint>
 #include <iosfwd>
 
-class RPCDigi {
+class IRPCDigi {
 public:
-  explicit RPCDigi(int strip, int bx);
-  explicit RPCDigi(int strip, int bx, int sbx);
-  RPCDigi();
+  explicit IRPCDigi(int strip, int bx);
+  explicit IRPCDigi(int strip, int bx, int sbx);
+  IRPCDigi();
 
-  bool operator==(const RPCDigi& digi) const;
-  bool operator<(const RPCDigi& digi) const;
+  bool operator==(const IRPCDigi& digi) const;
+  bool operator<(const IRPCDigi& digi) const;
   void print() const;
   int strip() const { return strip_; }
   int bx() const { return bx_; }
@@ -37,6 +37,6 @@ private:
   int32_t sbx_;
 };
 
-std::ostream& operator<<(std::ostream& o, const RPCDigi& digi);
+std::ostream& operator<<(std::ostream& o, const IRPCDigi& digi);
 
 #endif
