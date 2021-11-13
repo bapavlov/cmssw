@@ -149,12 +149,12 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
       for (std::vector<int>::iterator i = cls.begin(); i != cls.end(); i++) {
         std::pair<int, int> digi(*i, time_hit);
         RPCDigi adigi(*i, time_hit);
-        adigi.hasTime(true);
-        adigi.setTime(precise_time);
+        //adigi.hasTime(true);
+        //adigi.setTime(precise_time);
         if (do_Y) {
-          adigi.hasY(true);
-          adigi.setY(smearedPositionY);
-          adigi.setDeltaY(sigmaY);
+          //adigi.hasY(true);
+          //adigi.setY(smearedPositionY);
+          //adigi.setDeltaY(sigmaY);
         }
         irpc_digis.insert(adigi);
         theDetectorHitMap.insert(DetectorHitMap::value_type(digi, &(*_hit)));
@@ -197,14 +197,14 @@ void RPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngin
       double precise_time = CLHEP::RandFlat::shoot(engine, (nbxing * gate) / gate);
       int time_hit = (static_cast<int>(precise_time)) - nbxing / 2;
       RPCDigi adigi(j + 1, time_hit);
-      adigi.hasTime(true);
-      adigi.setTime(precise_time);
+      //adigi.hasTime(true);
+      //adigi.setTime(precise_time);
       if (do_Y) {
         double positionY = CLHEP::RandFlat::shoot(engine, striplength);
         positionY -= striplength / 2;
-        adigi.hasY(true);
-        adigi.setY(positionY);
-        adigi.setDeltaY(sigmaY);
+        //adigi.hasY(true);
+        //adigi.setY(positionY);
+        //adigi.setDeltaY(sigmaY);
       }
       irpc_digis.insert(adigi);
     }

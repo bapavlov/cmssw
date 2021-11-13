@@ -1,5 +1,5 @@
-#ifndef RPCDigiProducer_h
-#define RPCDigiProducer_h
+#ifndef IRPCDigiProducer_h
+#define IRPCDigiProducer_h
 
 #include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -9,7 +9,7 @@
 #include "FWCore/Utilities/interface/ESGetToken.h"
 
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
-#include "SimMuon/RPCDigitizer/src/RPCDigitizer.h"
+#include "SimMuon/RPCDigitizer/src/IRPCDigitizer.h"
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 #include "CondFormats/RPCObjects/interface/RPCStripNoises.h"
 #include "CondFormats/DataRecord/interface/RPCStripNoisesRcd.h"
@@ -20,13 +20,13 @@ class RPCGeometry;
 class RPCSimSetUp;
 class RPCSynchronizer;
 
-class RPCDigiProducer : public edm::stream::EDProducer<> {
+class IRPCDigiProducer : public edm::stream::EDProducer<> {
 public:
   //  typedef edm::DetSetVector<RPCDigiSimLink> RPCDigiSimLinks;
-  typedef RPCDigitizer::RPCDigiSimLinks RPCDigitizerSimLinks;
+  typedef IRPCDigitizer::RPCDigiSimLinks IRPCDigitizerSimLinks;
 
-  explicit RPCDigiProducer(const edm::ParameterSet& ps);
-  ~RPCDigiProducer() override;
+  explicit IRPCDigiProducer(const edm::ParameterSet& ps);
+  ~IRPCDigiProducer() override;
 
   void beginRun(const edm::Run&, const edm::EventSetup&) override;
 
@@ -36,9 +36,9 @@ public:
   void setRPCSetUp(const std::vector<RPCStripNoises::NoiseItem>&, const std::vector<double>&);
 
 private:
-  RPCDigitizer* theRPCDigitizer;
-  RPCSimSetUp* theRPCSimSetUpRPC;
-
+  IRPCDigitizer* theIRPCDigitizer;
+  RPCSimSetUp* theRPCSimSetUpIRPC;
+  //  RPCSimSetUp* theRPCSimSetUp;
 
   //Name of Collection used for create the XF
   std::string mix_;
