@@ -44,6 +44,8 @@ public:
   RPCSimSetUp* getRPCSimSetUp() { return theSimSetUp; }
   double getExactTime() const { return the_exact_time; }
   double getSmearedTime() const { return the_smeared_time; }
+  float getTiming(const PSimHit* simhit, CLHEP::HepRandomEngine* engine, float StripLength);
+  int BX(float time);
 
 private:
   double resRPC;

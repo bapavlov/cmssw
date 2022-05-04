@@ -90,6 +90,18 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
     // Here I hould check if the RPC are up side down;
     const LocalPoint& entr = _hit->entryPoint();
 
+    float striplength;
+    if (rpcId.region() == 0) {
+      const RectangularStripTopology* top_ = dynamic_cast<const RectangularStripTopology*>(&(roll->topology()));
+      striplength = (top_->stripLength());
+      
+    } else {
+      const TrapezoidalStripTopology* top_ = dynamic_cast<const TrapezoidalStripTopology*>(&(roll->topology()));
+      striplength = (top_->stripLength());
+    }
+
+    std::cout<<"striplength\t"<<striplength<<std::endl;
+
     int time_hit = _rpcSync->getSimHitBxAndTimingForIRPC(&(*_hit), engine);
     double precise_time = _rpcSync->getSmearedTime();
 
