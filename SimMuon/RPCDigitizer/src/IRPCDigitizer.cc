@@ -18,7 +18,7 @@ IRPCDigitizer::IRPCDigitizer(const edm::ParameterSet& config)
 IRPCDigitizer::~IRPCDigitizer() = default;
 
 void IRPCDigitizer::doAction(MixCollection<PSimHit>& simHits,
-                             RPCDigiCollection& rpcDigis,
+                             IRPCDigiCollection& rpcDigis,
                              RPCDigiSimLinks& rpcDigiSimLink,
                              CLHEP::HepRandomEngine* engine) {
   theRPCSim->setRPCSimSetUp(theSimSetUp);

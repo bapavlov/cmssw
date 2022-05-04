@@ -36,7 +36,9 @@ simMuonRPCDigis = cms.EDProducer("RPCDigiProducer",
 from Configuration.Eras.Modifier_fastSim_cff import fastSim
 fastSim.toModify(simMuonRPCDigis, InputCollection = 'MuonSimHitsMuonRPCHits')
 
-_simMuonRPCDigisPhaseII = cms.EDProducer("RPCandIRPCDigiProducer",
+
+
+simMuonRPCDigisPhaseII = cms.EDProducer("RPCDigiProducer",
     Noise = cms.bool(True),
     digiModelConfig = cms.PSet(
         signalPropagationSpeed = cms.double(0.66),
@@ -64,7 +66,12 @@ _simMuonRPCDigisPhaseII = cms.EDProducer("RPCandIRPCDigiProducer",
     Signal = cms.bool(True),
     mixLabel = cms.string('mix'),
     InputCollection = cms.string('g4SimHitsMuonRPCHits'),
-    digiModel = cms.string('RPCSimModelTiming'),
+    digiModel = cms.string('RPCSimModelTiming')
+)
+
+#the digitizer for IRPC chambers is IRPCSimModelTiming and is based on  RPCSimAverageNoiseEffCls 
+simMuonIRPCDigis = cms.EDProducer("IRPCDigiProducer",
+    Noise = cms.bool(True),
     digiIRPCModelConfig = cms.PSet(
         signalPropagationSpeed = cms.double(0.66),
         timingRPCOffset = cms.double(50.0),
@@ -87,11 +94,16 @@ _simMuonRPCDigisPhaseII = cms.EDProducer("RPCandIRPCDigiProducer",
         do_Y_coordinate = cms.bool(True),
         digitizeElectrons = cms.bool(True),
     ),
-    digiIRPCModel = cms.string('RPCSimModelTiming')
+    doBkgNoise = cms.bool(False), #False - no noise and bkg simulation                                                                        
+    Signal = cms.bool(True),
+    mixLabel = cms.string('mix'),
+    InputCollection = cms.string('g4SimHitsMuonRPCHits'),
+    digiIRPCModel = cms.string('IRPCSimModelTiming')
 )
 
 from Configuration.Eras.Modifier_phase2_muon_cff import phase2_muon
-phase2_muon.toReplaceWith( simMuonRPCDigis, _simMuonRPCDigisPhaseII )
+phase2_muon.toReplaceWith(simMuonRPCDigis, simMuonRPCDigisPhaseII)
+
 
 from Configuration.ProcessModifiers.premix_stage2_cff import premix_stage2
 premix_stage2.toModify(simMuonRPCDigis, mixLabel = "mixData")

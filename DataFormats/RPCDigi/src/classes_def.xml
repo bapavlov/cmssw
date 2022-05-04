@@ -1,5 +1,7 @@
 <lcgdict>
-<class name="RPCDigi" ClassVersion="13">
+
+<class name="RPCDigi" ClassVersion="14">
+ <version ClassVersion="14" checksum="2935734335"/>
  <version ClassVersion="13" checksum="3650334651"/>
 </class>
 <class name="std::vector<RPCDigi>"/>
@@ -35,5 +37,6 @@
  <version ClassVersion="3" checksum="1674895127" />
 </class>
 <class name="edm::Wrapper<RPCAMCLinkCounters>" />
-
+  
 </lcgdict>
+ 

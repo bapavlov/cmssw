@@ -15,28 +15,17 @@
 RPCDigi::RPCDigi(int strip, int bx)
     : strip_(strip),
       bx_(bx),
-      time_(0),
-      coordinateX_(0),
-      coordinateY_(0),
-      deltaTime_(0),
-      deltaX_(0),
-      deltaY_(0),
-      hasTime_(false),
-      hasX_(false),
-      hasY_(false) {}
+      sbx_(0){}
+
+RPCDigi::RPCDigi(int strip, int bx, int sbx)
+  : strip_(strip),
+    bx_(bx),
+    sbx_(sbx){}
 
 RPCDigi::RPCDigi()
     : strip_(0),
       bx_(0),
-      time_(0),
-      coordinateX_(0),
-      coordinateY_(0),
-      deltaTime_(0),
-      deltaX_(0),
-      deltaY_(0),
-      hasTime_(false),
-      hasX_(false),
-      hasY_(false) {}
+      sbx_(0) {}
 
 // Comparison
 bool RPCDigi::operator==(const RPCDigi& digi) const {
