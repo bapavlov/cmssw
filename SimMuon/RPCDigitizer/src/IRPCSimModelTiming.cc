@@ -1,6 +1,6 @@
 #include "Geometry/RPCGeometry/interface/RPCRoll.h"
 #include "Geometry/RPCGeometry/interface/RPCRollSpecs.h"
-#include "SimMuon/RPCDigitizer/src/RPCSimModelTiming.h"
+#include "SimMuon/RPCDigitizer/src/IRPCSimModelTiming.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimSetUp.h"
 
 #include "SimMuon/RPCDigitizer/src/RPCSynchronizer.h"
@@ -22,6 +22,7 @@
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimSetUp.h"
+#include "DataFormats/IRPCDigi/interface/IRPCDigiCollection.h"
 
 #include <cstring>
 #include <iostream>
@@ -38,7 +39,7 @@
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-RPCSimModelTiming::RPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(config) {
+IRPCSimModelTiming::IRPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(config) {
   aveEff = config.getParameter<double>("averageEfficiency");
   aveCls = config.getParameter<double>("averageClusterSize");
   resRPC = config.getParameter<double>("timeResolution");
@@ -53,6 +54,7 @@ RPCSimModelTiming::RPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(c
   nbxing = config.getParameter<int>("Nbxing");
   gate = config.getParameter<double>("Gate");
   frate = config.getParameter<double>("Frate");
+  sigmaY = config.getParameter<double>("sigmaY");
   eledig = config.getParameter<bool>("digitizeElectrons");
 
   if (rpcdigiprint) {
@@ -69,9 +71,9 @@ RPCSimModelTiming::RPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(c
   _rpcSync = new RPCSynchronizer(config);
 }
 
-RPCSimModelTiming::~RPCSimModelTiming() { delete _rpcSync; }
+IRPCSimModelTiming::~IRPCSimModelTiming() { delete _rpcSync; }
 
-void RPCSimModelTiming::simulate(const RPCRoll* roll,
+void IRPCSimModelTiming::simulate(const RPCRoll* roll,
                                  const edm::PSimHitContainer& rpcHits,
                                  CLHEP::HepRandomEngine* engine) {
   _rpcSync->setRPCSimSetUp(getRPCSimSetUp());
@@ -83,7 +85,7 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
   RPCGeomServ RPCname(rpcId);
 
   const Topology& topology = roll->specs()->topology();
-  
+
   for (edm::PSimHitContainer::const_iterator _hit = rpcHits.begin(); _hit != rpcHits.end(); ++_hit) {
     if (!eledig && _hit->particleType() == 11)
       continue;
@@ -101,7 +103,9 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
     int centralStrip = topology.channel(entr) + 1;
     ;
     float fire = CLHEP::RandFlat::shoot(engine);
-        
+
+    float smearedPositionY = CLHEP::RandGaussQ::shoot(engine, _hit->localPosition().y(), sigmaY);
+
     if (fire < veff[centralStrip - 1]) {
       int fstrip = centralStrip;
       int lstrip = centralStrip;
@@ -144,14 +148,14 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
       //leading to un-physical "shift" of the cluster
       for (std::vector<int>::iterator i = cls.begin(); i != cls.end(); i++) {
         std::pair<int, int> digi(*i, time_hit);
-        //RPCDigi adigi(*i, time_hit);
-	double dt=precise_time-time_hit*25.;
-	int sbx = int(dt/2.5)-5;
-	double tcalc =  2.5*(sbx+5)+time_hit*25;
-	std::cout<<"XAXAXA\t"<<time_hit<<'\t'<<precise_time<<'\t'<<time_hit*25.<<'\t'<<int(dt/2.5)-5<<'\t'<<tcalc<<'\t'<<precise_time-tcalc<<std::endl;
-	RPCDigi adigi(*i, time_hit,sbx);
+        IRPCDigi adigi(*i, time_hit);
         //adigi.hasTime(true);
         //adigi.setTime(precise_time);
+	
+	
+	//@@@ // adigi.setY(smearedPositionY);
+          
+        
         irpc_digis.insert(adigi);
         theDetectorHitMap.insert(DetectorHitMap::value_type(digi, &(*_hit)));
       }
@@ -159,7 +163,7 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
   }
 }
 
-void RPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngine* engine) {
+void IRPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngine* engine) {
   RPCDetId rpcId = roll->id();
   RPCGeomServ RPCname(rpcId);
   std::vector<float> vnoise = (getRPCSimSetUp())->getNoise(rpcId.rawId());
@@ -192,17 +196,17 @@ void RPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngin
     for (int i = 0; i < N_hits; i++) {
       double precise_time = CLHEP::RandFlat::shoot(engine, (nbxing * gate) / gate);
       int time_hit = (static_cast<int>(precise_time)) - nbxing / 2;
-      int sbx = CLHEP::RandFlat::shootInt(long(0), long(10));
-      RPCDigi adigi(j + 1, time_hit,sbx);
-      std::cout<<"XAXAXA noise\t"<<time_hit<<'\t'<<sbx<<std::endl;
+      IRPCDigi adigi(j + 1, time_hit);
       //adigi.hasTime(true);
       //adigi.setTime(precise_time);
+      double positionY = CLHEP::RandFlat::shoot(engine, striplength);
+      positionY -= striplength / 2;
       irpc_digis.insert(adigi);
     }
   }
 }
 
-int RPCSimModelTiming::getClSize(uint32_t id, float posX, CLHEP::HepRandomEngine* engine) {
+int IRPCSimModelTiming::getClSize(uint32_t id, float posX, CLHEP::HepRandomEngine* engine) {
   std::vector<double> clsForDetId = getRPCSimSetUp()->getCls(id);
 
   int cnt = 1;
@@ -248,7 +252,7 @@ int RPCSimModelTiming::getClSize(uint32_t id, float posX, CLHEP::HepRandomEngine
   return min;
 }
 
-int RPCSimModelTiming::LeftRightNeighbour(const RPCRoll& roll, const LocalPoint& hit_pos, int strip) {
+int IRPCSimModelTiming::LeftRightNeighbour(const RPCRoll& roll, const LocalPoint& hit_pos, int strip) {
   //if left return -1
   //if right return +1
 

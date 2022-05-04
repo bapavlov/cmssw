@@ -106,12 +106,14 @@ void RPCandIRPCDigiProducer::produce(edm::Event& e, const edm::EventSetup& event
 
   // Create empty output
   std::unique_ptr<RPCDigiCollection> pDigis(new RPCDigiCollection());
+  std::unique_ptr<IRPCDigiCollection> pIDigis(new IRPCDigiCollection());
   std::unique_ptr<RPCDigitizerSimLinks> RPCDigitSimLink(new RPCDigitizerSimLinks());
 
   theRPCDigitizer->doAction(*hits, *pDigis, *RPCDigitSimLink, engine);   //make "bakelite RPC" digitizer do the action
-  theIRPCDigitizer->doAction(*hits, *pDigis, *RPCDigitSimLink, engine);  //make "IRPC" digitizer do the action
+  theIRPCDigitizer->doAction(*hits, *pIDigis, *RPCDigitSimLink, engine);  //make "IRPC" digitizer do the action
 
   e.put(std::move(pDigis));
+  e.put(std::move(pIDigis));
   //store the SimDigiLinks in the event
   e.put(std::move(RPCDigitSimLink), "RPCDigiSimLink");
 }

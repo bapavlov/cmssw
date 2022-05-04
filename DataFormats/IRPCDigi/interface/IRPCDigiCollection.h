@@ -7,9 +7,9 @@
  */
 
 #include <DataFormats/MuonDetId/interface/RPCDetId.h>
-#include <DataFormats/RPCDigi/interface/RPCDigi.h>
+#include <DataFormats/IRPCDigi/interface/IRPCDigi.h>
 #include <DataFormats/MuonData/interface/MuonDigiCollection.h>
 
-typedef MuonDigiCollection<RPCDetId, RPCDigi> IRPCDigiCollection;
+typedef MuonDigiCollection<RPCDetId, IRPCDigi> IRPCDigiCollection;
 
 #endif

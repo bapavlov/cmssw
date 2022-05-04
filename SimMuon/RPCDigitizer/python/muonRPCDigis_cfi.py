@@ -69,6 +69,7 @@ simMuonRPCDigisPhaseII = cms.EDProducer("RPCDigiProducer",
     digiModel = cms.string('RPCSimModelTiming')
 )
 
+#the digitizer for IRPC chambers is IRPCSimModelTiming and is based on  RPCSimAverageNoiseEffCls 
 simMuonIRPCDigis = cms.EDProducer("IRPCDigiProducer",
     Noise = cms.bool(True),
     digiIRPCModelConfig = cms.PSet(
@@ -97,7 +98,7 @@ simMuonIRPCDigis = cms.EDProducer("IRPCDigiProducer",
     Signal = cms.bool(True),
     mixLabel = cms.string('mix'),
     InputCollection = cms.string('g4SimHitsMuonRPCHits'),
-    digiIRPCModel = cms.string('RPCSimModelTiming')
+    digiIRPCModel = cms.string('IRPCSimModelTiming')
 )
 
 from Configuration.Eras.Modifier_phase2_muon_cff import phase2_muon

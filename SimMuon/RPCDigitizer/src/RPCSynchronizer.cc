@@ -136,6 +136,8 @@ int RPCSynchronizer::getSimHitBx(const PSimHit* simhit, CLHEP::HepRandomEngine* 
   return bx;
 }
 
+
+
 int RPCSynchronizer::getSimHitBxAndTimingForIRPC(const PSimHit* simhit, CLHEP::HepRandomEngine* engine) {
   RPCSimSetUp* simsetup = this->getRPCSimSetUp();
   const RPCGeometry* geometry = simsetup->getGeometry();
@@ -222,15 +224,14 @@ int RPCSynchronizer::getSimHitBxAndTimingForIRPC(const PSimHit* simhit, CLHEP::H
 
       if (inf_time < time_differ && time_differ < sup_time) {
         bx = n;
-        the_exact_time = exact_time_differ;
-        the_smeared_time = time_differ;
-
         //cout<<"Debug\t"<<inf_time<<'\t'<<sup_time<<endl;
         ////if(bx)
         //	cout<<"Bingo\t"<<time_differ<<'\t'<<bx<<'\t'<<exact_time_differ<<'\t'<<exact_time_differ-time_differ<<'\t'<<exact_time_differ-bx*25.<<endl;
         break;
       }
     }
+    the_exact_time = exact_time_differ;
+    the_smeared_time = time_differ;
   }
   return bx;
 }
