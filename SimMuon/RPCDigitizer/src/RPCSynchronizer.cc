@@ -281,7 +281,7 @@ float RPCSynchronizer::getTiming(const PSimHit* simhit, CLHEP::HepRandomEngine* 
 }
 
 
-int RPCSynchronizer::BX(float time){
+int RPCSynchronizer::getBX(float time){
   int bx = -999;
   double inf_time = 0;
   double sup_time = 0;
@@ -301,4 +301,22 @@ int RPCSynchronizer::BX(float time){
     }
   }
   return bx;
+}
+
+std::pair<int,int> RPCSynchronizer::getBX_SBX(float time){
+  const float LB_clock = 25.;
+  const float LB_precise_clock=2.5;
+  int sign = (time > 0) ? -1 : 1;
+  int BX=int(time/LB_clock + sign*0.5);
+  double dt=time-BX*LB_clock;
+  int SBX = int(dt/LB_precise_clock)-5;
+
+  double tcalc =  2.5*(SBX+5)+BX*25;
+
+  std::cout<<"time="<<time<<"\tsign="<<sign<<"\tBX="<<BX<<"\tSBX="<<SBX<<"\ttime="<<tcalc<<"\tDelta="<<time-tcalc<<std::endl;
+  
+  pair<int,int> tdc;
+  tdc.first=BX;
+  tdc.second=SBX;
+  return tdc;
 }

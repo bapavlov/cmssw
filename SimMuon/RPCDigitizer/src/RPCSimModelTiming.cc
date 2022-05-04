@@ -160,7 +160,16 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
 	double dt=precise_time-time_hit*25.;
 	int sbx = int(dt/2.5)-5;
 	double tcalc =  2.5*(sbx+5)+time_hit*25;
-	std::cout<<"XAXAXA\t"<<time_hit<<'\t'<<precise_time<<'\t'<<time_hit*25.<<'\t'<<int(dt/2.5)-5<<'\t'<<tcalc<<'\t'<<precise_time-tcalc<<std::endl;
+	//std::cout<<"XAXAXA\t"<<time_hit<<'\t'<<precise_time<<'\t'<<time_hit*25.<<'\t'<<int(dt/2.5)-5<<'\t'<<tcalc<<'\t'<<precise_time-tcalc<<std::endl;
+
+	std::cout<<"XAXAXA\t"<<time_hit<<'\t'<<sbx<<'\t'<<precise_time-tcalc<<std::endl;
+	
+	std::pair<int,int> tdc = _rpcSync->getBX_SBX(precise_time);
+	//_rpcSync->getBX_SBX(precise_time); 
+		std::cout<<"XOXOXO\t"<<tdc.first<<'\t'<<tdc.second<<std::endl;
+
+	
+  
 	RPCDigi adigi(*i, time_hit,sbx);
         //adigi.hasTime(true);
         //adigi.setTime(precise_time);
