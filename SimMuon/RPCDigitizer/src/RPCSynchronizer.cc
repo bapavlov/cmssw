@@ -248,13 +248,13 @@ float RPCSynchronizer::getTiming(const PSimHit* simhit, CLHEP::HepRandomEngine* 
 
   RPCDetId SimDetId(simhit->detUnitId());
 
-  const RPCRoll* SimRoll = nullptr;
+  
 
   
   float distanceFromEdge = 0;
   float half_stripL = StripLength/2.;
   
-  if (SimRoll->id().region() == 0) {
+  if (SimDetId.region() == 0) {
     distanceFromEdge = half_stripL + simHitPos.y();
   } else {
     distanceFromEdge = half_stripL - simHitPos.y();
@@ -309,11 +309,11 @@ std::pair<int,int> RPCSynchronizer::getBX_SBX(float time){
   int sign = (time > 0) ? -1 : 1;
   int BX=int(time/LB_clock + sign*0.5);
   double dt=time-BX*LB_clock;
-  int SBX = int(dt/LB_precise_clock)-5;
+  int SBX = int(dt/LB_precise_clock)+5;
 
-  double tcalc =  2.5*(SBX+5)+BX*25;
+  double tcalc =  2.5*(SBX-5)+BX*25;
 
-  std::cout<<"time="<<time<<"\tsign="<<sign<<"\tBX="<<BX<<"\tSBX="<<SBX<<"\ttime="<<tcalc<<"\tDelta="<<time-tcalc<<std::endl;
+  //  std::cout<<"time="<<time<<"\tsign="<<sign<<"\tBX="<<BX<<"\tSBX="<<SBX<<"\ttime="<<tcalc<<"\tDelta="<<time-tcalc<<std::endl;
   
   pair<int,int> tdc;
   tdc.first=BX;

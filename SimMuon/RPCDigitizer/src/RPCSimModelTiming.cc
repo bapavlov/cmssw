@@ -102,16 +102,15 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
 
     std::cout<<"striplength\t"<<striplength<<std::endl;
 
-    int time_hit = _rpcSync->getSimHitBxAndTimingForIRPC(&(*_hit), engine);
-    double precise_time = _rpcSync->getSmearedTime();
-
+    
+    double precise_time = _rpcSync->getTiming(&(*_hit), engine,striplength);
+    std::pair<int,int> tdc = _rpcSync->getBX_SBX(precise_time);
     float posX = roll->strip(_hit->localPosition()) - static_cast<int>(roll->strip(_hit->localPosition()));
 
     std::vector<float> veff = (getRPCSimSetUp())->getEff(rpcId.rawId());
 
     // Effinciecy
-    int centralStrip = topology.channel(entr) + 1;
-    ;
+    int centralStrip = topology.channel(entr) + 1;    
     float fire = CLHEP::RandFlat::shoot(engine);
         
     if (fire < veff[centralStrip - 1]) {
@@ -155,22 +154,13 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
       //in the previuos version some strips were dropped
       //leading to un-physical "shift" of the cluster
       for (std::vector<int>::iterator i = cls.begin(); i != cls.end(); i++) {
-        std::pair<int, int> digi(*i, time_hit);
+        std::pair<int, int> digi(*i, tdc.first);
         //RPCDigi adigi(*i, time_hit);
-	double dt=precise_time-time_hit*25.;
-	int sbx = int(dt/2.5)-5;
-	double tcalc =  2.5*(sbx+5)+time_hit*25;
-	//std::cout<<"XAXAXA\t"<<time_hit<<'\t'<<precise_time<<'\t'<<time_hit*25.<<'\t'<<int(dt/2.5)-5<<'\t'<<tcalc<<'\t'<<precise_time-tcalc<<std::endl;
-
-	std::cout<<"XAXAXA\t"<<time_hit<<'\t'<<sbx<<'\t'<<precise_time-tcalc<<std::endl;
+	double dt=precise_time-(tdc.first*25.+(tdc.second-5)*2.5);
 	
-	std::pair<int,int> tdc = _rpcSync->getBX_SBX(precise_time);
-	//_rpcSync->getBX_SBX(precise_time); 
-		std::cout<<"XOXOXO\t"<<tdc.first<<'\t'<<tdc.second<<std::endl;
-
+	std::cout<<"DeltaT\t"<<dt<<std::endl;
 	
-  
-	RPCDigi adigi(*i, time_hit,sbx);
+	RPCDigi adigi(*i, tdc.first,tdc.second);
         //adigi.hasTime(true);
         //adigi.setTime(precise_time);
         irpc_digis.insert(adigi);
