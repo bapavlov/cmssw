@@ -281,6 +281,13 @@ float RPCSynchronizer::getTiming(const PSimHit* simhit, CLHEP::HepRandomEngine* 
 }
 
 
+float RPCSynchronizer::getSecondTDCTiming(float t, CLHEP::HepRandomEngine* engine, float StripLength){
+  float time_oppset = StripLength/sspeed;
+  float rr_el = CLHEP::RandGaussQ::shoot(engine, 0., irpc_electronics_jitter); // time smearing to simulate second TDC resolution
+  return t + rr_el - time_oppset;
+}
+
+
 int RPCSynchronizer::getBX(float time){
   int bx = -999;
   double inf_time = 0;
@@ -319,4 +326,28 @@ std::pair<int,int> RPCSynchronizer::getBX_SBX(float time){
   tdc.first=BX;
   tdc.second=SBX;
   return tdc;
+}
+
+
+std::pair<int,int> RPCSynchronizer::getFineTime(const PSimHit* simhit, CLHEP::HepRandomEngine* engine,float StripLength){
+  float half_stripL=StripLength/2;
+  LocalPoint simHitPos = simhit->localPosition();
+  float  distanceFromEdge1 = half_stripL - simHitPos.y();
+  float  distanceFromEdge2 = half_stripL + simHitPos.y();
+
+  float prop_time1 = distanceFromEdge1 / sspeed;
+  float prop_time2 = distanceFromEdge2 / sspeed;
+
+  // adding electronics resolution
+  prop_time1 += CLHEP::RandGaussQ::shoot(engine, 0., irpc_electronics_jitter);
+  prop_time2 += CLHEP::RandGaussQ::shoot(engine, 0., irpc_electronics_jitter);
+
+  const float LB_precise_clock=2.5;
+  const int bins=256;
+  const float time_resolution=LB_precise_clock/bins;
+
+  int fineTimeTDC1 = int(prop_time1/time_resolution);
+  int fineTimeTDC2 = int(prop_time2/time_resolution);
+
+  return pair<int,int>(fineTimeTDC1,fineTimeTDC2);
 }

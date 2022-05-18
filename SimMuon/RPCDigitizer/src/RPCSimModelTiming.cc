@@ -205,7 +205,7 @@ void RPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngin
       int time_hit = (static_cast<int>(precise_time)) - nbxing / 2;
       int sbx = CLHEP::RandFlat::shootInt(long(0), long(10));
       RPCDigi adigi(j + 1, time_hit,sbx);
-      std::cout<<"XAXAXA noise\t"<<time_hit<<'\t'<<sbx<<std::endl;
+      std::cout<<"RPC_Noise\t"<<time_hit<<'\t'<<sbx<<std::endl;
       //adigi.hasTime(true);
       //adigi.setTime(precise_time);
       irpc_digis.insert(adigi);

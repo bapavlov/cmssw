@@ -45,8 +45,10 @@ public:
   double getExactTime() const { return the_exact_time; }
   double getSmearedTime() const { return the_smeared_time; }
   float getTiming(const PSimHit* simhit, CLHEP::HepRandomEngine* engine, float StripLength);
+  float getSecondTDCTiming(float t, CLHEP::HepRandomEngine* engine, float StripLength);
   int getBX(float time);
   std::pair<int,int> getBX_SBX(float time);
+  std::pair<int,int> getFineTime(const PSimHit* simhit, CLHEP::HepRandomEngine* engine,float StripLength);
 
 private:
   double resRPC;
