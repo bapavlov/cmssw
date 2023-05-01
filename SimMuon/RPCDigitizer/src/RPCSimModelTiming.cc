@@ -146,9 +146,9 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
         std::pair<int, int> digi(*i, time_hit);
         //RPCDigi adigi(*i, time_hit);
 	double dt=precise_time-time_hit*25.;
-	int sbx = int(dt/2.5)-5;
-	double tcalc =  2.5*(sbx+5)+time_hit*25;
-	std::cout<<"XAXAXA\t"<<time_hit<<'\t'<<precise_time<<'\t'<<time_hit*25.<<'\t'<<int(dt/2.5)-5<<'\t'<<tcalc<<'\t'<<precise_time-tcalc<<std::endl;
+	int sbx = int(dt/2.5)+5;
+	double tcalc =  2.5*(sbx-5)+time_hit*25;
+	std::cout<<"Debug\t"<<time_hit<<'\t'<<precise_time<<'\t'<<time_hit*25.<<'\t'<<int(dt/2.5)-5<<'\t'<<tcalc<<'\t'<<precise_time-tcalc<<std::endl;
 	RPCDigi adigi(*i, time_hit,sbx);
         //adigi.hasTime(true);
         //adigi.setTime(precise_time);
@@ -194,7 +194,7 @@ void RPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngin
       int time_hit = (static_cast<int>(precise_time)) - nbxing / 2;
       int sbx = CLHEP::RandFlat::shootInt(long(0), long(10));
       RPCDigi adigi(j + 1, time_hit,sbx);
-      std::cout<<"XAXAXA noise\t"<<time_hit<<'\t'<<sbx<<std::endl;
+      std::cout<<"Debug noise\t"<<time_hit<<'\t'<<sbx<<std::endl;
       //adigi.hasTime(true);
       //adigi.setTime(precise_time);
       irpc_digis.insert(adigi);
