@@ -1,5 +1,5 @@
-#ifndef RPCDigitizer_RPCSimModelTiming_h
-#define RPCDigitizer_RPCSimModelTiming_h
+#ifndef RPCDigitizer_IRPCSimModelTiming_h
+#define RPCDigitizer_IRPCSimModelTiming_h
 
 /** \class RPCSimAverage
  *   Class for the RPC strip response simulation based
@@ -28,10 +28,10 @@ namespace CLHEP {
   class HepRandomEngine;
 }
 
-class RPCSimModelTiming : public RPCSim {
+class IRPCSimModelTiming : public RPCSim {
 public:
-  RPCSimModelTiming(const edm::ParameterSet& config);
-  ~RPCSimModelTiming() override;
+  IRPCSimModelTiming(const edm::ParameterSet& config);
+  ~IRPCSimModelTiming() override;
   void simulate(const RPCRoll* roll, const edm::PSimHitContainer& rpcHits, CLHEP::HepRandomEngine*) override;
   void simulateNoise(const RPCRoll*, CLHEP::HepRandomEngine*) override;
   int getClSize(uint32_t id, float posX, CLHEP::HepRandomEngine*);
@@ -63,7 +63,7 @@ protected:
   std::vector<double> sum_clsize;
   std::vector<double> clsForDetId;
   std::ifstream* infile;
-  std::set<RPCDigi> irpc_digis;
+  std::set<IRPCDigi> irpc_digis;
 
   RPCSynchronizer* _rpcSync;
 };

@@ -199,6 +199,9 @@ phase2_muon.toModify(
     simMuonME0PseudoReDigisCoarse = cms.PSet(
         initialSeed = cms.untracked.uint32(2234567),
         engineName = FullSimEngine),
+    simMuonIRPCDigis = cms.PSet(
+        initialSeed = cms.untracked.uint32(1234567),
+        engineName = FullSimEngine),
 )
 
 from Configuration.Eras.Modifier_phase2_timing_cff import phase2_timing

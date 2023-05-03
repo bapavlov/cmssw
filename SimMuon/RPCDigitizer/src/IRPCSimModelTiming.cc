@@ -1,6 +1,6 @@
 #include "Geometry/RPCGeometry/interface/RPCRoll.h"
 #include "Geometry/RPCGeometry/interface/RPCRollSpecs.h"
-#include "SimMuon/RPCDigitizer/src/RPCSimModelTiming.h"
+#include "SimMuon/RPCDigitizer/src/IRPCSimModelTiming.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimSetUp.h"
 
 #include "SimMuon/RPCDigitizer/src/RPCSynchronizer.h"
@@ -22,6 +22,7 @@
 #include "Geometry/Records/interface/MuonGeometryRecord.h"
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimSetUp.h"
+#include "DataFormats/IRPCDigi/interface/IRPCDigiCollection.h"
 
 #include <cstring>
 #include <iostream>
@@ -38,7 +39,7 @@
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-RPCSimModelTiming::RPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(config) {
+IRPCSimModelTiming::IRPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(config) {
   aveEff = config.getParameter<double>("averageEfficiency");
   aveCls = config.getParameter<double>("averageClusterSize");
   resRPC = config.getParameter<double>("timeResolution");
@@ -53,6 +54,7 @@ RPCSimModelTiming::RPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(c
   nbxing = config.getParameter<int>("Nbxing");
   gate = config.getParameter<double>("Gate");
   frate = config.getParameter<double>("Frate");
+  sigmaY = config.getParameter<double>("sigmaY");
   eledig = config.getParameter<bool>("digitizeElectrons");
 
   if (rpcdigiprint) {
@@ -69,9 +71,9 @@ RPCSimModelTiming::RPCSimModelTiming(const edm::ParameterSet& config) : RPCSim(c
   _rpcSync = new RPCSynchronizer(config);
 }
 
-RPCSimModelTiming::~RPCSimModelTiming() { delete _rpcSync; }
+IRPCSimModelTiming::~IRPCSimModelTiming() { delete _rpcSync; }
 
-void RPCSimModelTiming::simulate(const RPCRoll* roll,
+void IRPCSimModelTiming::simulate(const RPCRoll* roll,
                                  const edm::PSimHitContainer& rpcHits,
                                  CLHEP::HepRandomEngine* engine) {
   _rpcSync->setRPCSimSetUp(getRPCSimSetUp());
@@ -83,7 +85,7 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
   RPCGeomServ RPCname(rpcId);
 
   const Topology& topology = roll->specs()->topology();
-  
+
   for (edm::PSimHitContainer::const_iterator _hit = rpcHits.begin(); _hit != rpcHits.end(); ++_hit) {
     if (!eledig && _hit->particleType() == 11)
       continue;
@@ -91,28 +93,30 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
     const LocalPoint& entr = _hit->entryPoint();
 
     float striplength;
-    if (rpcId.region() == 0) {
-      const RectangularStripTopology* top_ = dynamic_cast<const RectangularStripTopology*>(&(roll->topology()));
-      striplength = (top_->stripLength());
-      
-    } else {
-      const TrapezoidalStripTopology* top_ = dynamic_cast<const TrapezoidalStripTopology*>(&(roll->topology()));
-      striplength = (top_->stripLength());
-    }
-
-    //std::cout<<"striplength\t"<<striplength<<std::endl;
-
     
-    double precise_time = _rpcSync->getTiming(&(*_hit), engine,striplength);
-    std::pair<int,int> tdc = _rpcSync->getBX_SBX(precise_time);
+    const TrapezoidalStripTopology* top_ = dynamic_cast<const TrapezoidalStripTopology*>(&(roll->topology()));
+    striplength = (top_->stripLength());
+
+    float proper_time = _rpcSync->getTiming(&(*_hit), engine,striplength);
+    float TDC2_time = _rpcSync->getSecondTDCTiming(proper_time, engine,striplength);
+
+    std::pair<int,int> tdc1 = _rpcSync->getBX_SBX(proper_time); //calculates the BX and subBX for the first TDC 
+    std::pair<int,int> tdc2 = _rpcSync->getBX_SBX(TDC2_time); //calculates the BX and subBX for the second TDC  
+
+
+    std::pair<int,int> fine_time = _rpcSync->getFineTime(&(*_hit), engine,striplength); // calculetes the timing for signal propagation measurement
+
     float posX = roll->strip(_hit->localPosition()) - static_cast<int>(roll->strip(_hit->localPosition()));
 
     std::vector<float> veff = (getRPCSimSetUp())->getEff(rpcId.rawId());
 
     // Effinciecy
-    int centralStrip = topology.channel(entr) + 1;    
+    int centralStrip = topology.channel(entr) + 1;
+    
     float fire = CLHEP::RandFlat::shoot(engine);
-        
+
+    //    float smearedPositionY = CLHEP::RandGaussQ::shoot(engine, _hit->localPosition().y(), sigmaY);
+
     if (fire < veff[centralStrip - 1]) {
       int fstrip = centralStrip;
       int lstrip = centralStrip;
@@ -154,15 +158,15 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
       //in the previuos version some strips were dropped
       //leading to un-physical "shift" of the cluster
       for (std::vector<int>::iterator i = cls.begin(); i != cls.end(); i++) {
-        std::pair<int, int> digi(*i, tdc.first);
-        //RPCDigi adigi(*i, time_hit);
-
-	//double dt=precise_time-(tdc.first*25.+(tdc.second-5)*2.5);
-	//std::cout<<"DeltaT\t"<<dt<<std::endl;
-	
-	RPCDigi adigi(*i, tdc.first,tdc.second);
+        std::pair<int, int> digi(*i, tdc1.first);
+        IRPCDigi adigi(*i, tdc1.first,tdc1.second,tdc2.first,tdc2.second,fine_time.first,fine_time.second);
         //adigi.hasTime(true);
         //adigi.setTime(precise_time);
+	
+	
+	//@@@ // adigi.setY(smearedPositionY);
+          
+        
         irpc_digis.insert(adigi);
         theDetectorHitMap.insert(DetectorHitMap::value_type(digi, &(*_hit)));
       }
@@ -170,7 +174,7 @@ void RPCSimModelTiming::simulate(const RPCRoll* roll,
   }
 }
 
-void RPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngine* engine) {
+void IRPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngine* engine) {
   RPCDetId rpcId = roll->id();
   RPCGeomServ RPCname(rpcId);
   std::vector<float> vnoise = (getRPCSimSetUp())->getNoise(rpcId.rawId());
@@ -201,20 +205,33 @@ void RPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngin
     CLHEP::RandPoissonQ randPoissonQ(*engine, ave);
     N_hits = randPoissonQ.fire();
     for (int i = 0; i < N_hits; i++) {
-      double precise_time = CLHEP::RandFlat::shoot(engine, (nbxing * gate) / gate);
-      int time_hit = (static_cast<int>(precise_time)) - nbxing / 2;
-      int sbx = CLHEP::RandFlat::shootInt(long(0), long(10));
-      RPCDigi adigi(j + 1, time_hit,sbx);
-      //std::cout<<"RPC_Noise\t"<<time_hit<<'\t'<<sbx<<std::endl;
+      double TDC1_time = CLHEP::RandFlat::shoot(engine, (nbxing * gate) / gate);
+      int TDC1_BX = (static_cast<int>(TDC1_time)) - nbxing / 2;
+      double TDC2_time = CLHEP::RandFlat::shoot(engine, (nbxing * gate) / gate);
+      int TDC2_BX = (static_cast<int>(TDC2_time)) - nbxing / 2;
+      int TDC1_SBX = CLHEP::RandFlat::shootInt(long(0), long(10));
+      int TDC2_SBX = CLHEP::RandFlat::shootInt(long(0), long(10));
+      int TDC1_fine = CLHEP::RandFlat::shootInt(long(0), long(256));
+      int TDC2_fine = CLHEP::RandFlat::shootInt(long(0), long(256));
 
+      IRPCDigi adigi(j + 1, TDC1_BX,TDC1_SBX,TDC2_BX,TDC2_SBX,TDC1_fine,TDC2_fine);
+     
+      //adigi.hasTime(true);                                                                                                                   
+      //adigi.setTime(precise_time);                                                                                                           
+      irpc_digis.insert(adigi);
+
+
+      //    IRPCDigi adigi(j + 1, time_hit);
       //adigi.hasTime(true);
       //adigi.setTime(precise_time);
-      irpc_digis.insert(adigi);
+      //double positionY = CLHEP::RandFlat::shoot(engine, striplength);
+      //positionY -= striplength / 2;
+      //irpc_digis.insert(adigi);
     }
   }
 }
 
-int RPCSimModelTiming::getClSize(uint32_t id, float posX, CLHEP::HepRandomEngine* engine) {
+int IRPCSimModelTiming::getClSize(uint32_t id, float posX, CLHEP::HepRandomEngine* engine) {
   std::vector<double> clsForDetId = getRPCSimSetUp()->getCls(id);
 
   int cnt = 1;
@@ -260,7 +277,7 @@ int RPCSimModelTiming::getClSize(uint32_t id, float posX, CLHEP::HepRandomEngine
   return min;
 }
 
-int RPCSimModelTiming::LeftRightNeighbour(const RPCRoll& roll, const LocalPoint& hit_pos, int strip) {
+int IRPCSimModelTiming::LeftRightNeighbour(const RPCRoll& roll, const LocalPoint& hit_pos, int strip) {
   //if left return -1
   //if right return +1
 

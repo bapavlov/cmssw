@@ -12,7 +12,8 @@ import FWCore.ParameterSet.Config as cms
 SimMuonFEVTDEBUG = cms.PSet(
     outputCommands = cms.untracked.vstring('keep *_simMuonCSCDigis_*_*',
         'keep *_simMuonDTDigis_*_*',
-        'keep *_simMuonRPCDigis_*_*')
+        'keep *_simMuonRPCDigis_*_*',
+        'keep *_*RPCDigis*_*_*')
 )
 #RAW content
 SimMuonRAW = cms.PSet(
