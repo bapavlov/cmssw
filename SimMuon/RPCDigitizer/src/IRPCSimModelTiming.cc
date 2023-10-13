@@ -159,7 +159,9 @@ void IRPCSimModelTiming::simulate(const RPCRoll* roll,
       //leading to un-physical "shift" of the cluster
       for (std::vector<int>::iterator i = cls.begin(); i != cls.end(); i++) {
         std::pair<int, int> digi(*i, tdc1.first);
-        IRPCDigi adigi(*i, tdc1.first,tdc1.second,tdc2.first,tdc2.second,fine_time.first,fine_time.second);
+        IRPCDigi adigi(*i, tdc1.first,tdc2.first,tdc1.second,tdc2.second,fine_time.first,fine_time.second);
+       
+
         //adigi.hasTime(true);
         //adigi.setTime(precise_time);
 	
@@ -214,7 +216,7 @@ void IRPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngi
       int TDC1_fine = CLHEP::RandFlat::shootInt(long(0), long(256));
       int TDC2_fine = CLHEP::RandFlat::shootInt(long(0), long(256));
 
-      IRPCDigi adigi(j + 1, TDC1_BX,TDC1_SBX,TDC2_BX,TDC2_SBX,TDC1_fine,TDC2_fine);
+      IRPCDigi adigi(j + 1, TDC1_BX,TDC2_BX,TDC1_SBX,TDC2_SBX,TDC1_fine,TDC2_fine);
      
       //adigi.hasTime(true);                                                                                                                   
       //adigi.setTime(precise_time);                                                                                                           
