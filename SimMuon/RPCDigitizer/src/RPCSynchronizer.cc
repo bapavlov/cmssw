@@ -135,6 +135,8 @@ int RPCSynchronizer::getSimHitBx(const PSimHit* simhit, CLHEP::HepRandomEngine* 
   return bx;
 }
 
+
+
 int RPCSynchronizer::getSimHitBxAndTimingForIRPC(const PSimHit* simhit, CLHEP::HepRandomEngine* engine) {
   RPCSimSetUp* simsetup = this->getRPCSimSetUp();
   const RPCGeometry* geometry = simsetup->getGeometry();
@@ -181,7 +183,7 @@ int RPCSynchronizer::getSimHitBxAndTimingForIRPC(const PSimHit* simhit, CLHEP::H
       half_stripL = top_->stripLength() / 2;
       distanceFromEdge = half_stripL - simHitPos.y();
     }
-
+    
     float prop_time = distanceFromEdge / sspeed;
 
     //    double rr_tim1 = CLHEP::RandGaussQ::shoot(engine, 0.,resRPC);
@@ -221,15 +223,117 @@ int RPCSynchronizer::getSimHitBxAndTimingForIRPC(const PSimHit* simhit, CLHEP::H
 
       if (inf_time < time_differ && time_differ < sup_time) {
         bx = n;
-        the_exact_time = exact_time_differ;
-        the_smeared_time = time_differ;
-
-        //cout<<"Debug\t"<<inf_time<<'\t'<<sup_time<<endl;
-        ////if(bx)
-        //	cout<<"Bingo\t"<<time_differ<<'\t'<<bx<<'\t'<<exact_time_differ<<'\t'<<exact_time_differ-time_differ<<'\t'<<exact_time_differ-bx*25.<<endl;
         break;
       }
+    }
+    the_exact_time = exact_time_differ;
+    the_smeared_time = time_differ;
+  }
+  return bx;
+}
+
+
+float RPCSynchronizer::getTiming(const PSimHit* simhit, CLHEP::HepRandomEngine* engine, float StripLength) {
+  RPCSimSetUp* simsetup = this->getRPCSimSetUp();
+  float timeref = simsetup->getTime(simhit->detUnitId());
+
+  LocalPoint simHitPos = simhit->localPosition();
+  float tof = simhit->timeOfFlight();
+
+  //automatic variable to prevent memory leak
+
+  //  float rr_el = CLHEP::RandGaussQ::shoot(engine, 0.,resEle);
+  float rr_el = CLHEP::RandGaussQ::shoot(engine, 0., irpc_electronics_jitter);
+
+  RPCDetId SimDetId(simhit->detUnitId());
+
+  
+
+  
+  float distanceFromEdge = 0;
+  float half_stripL = StripLength/2.;
+  
+  if (SimDetId.region() == 0) {
+    distanceFromEdge = half_stripL + simHitPos.y();
+  } else {
+    distanceFromEdge = half_stripL - simHitPos.y();
+  }
+  
+  float prop_time = distanceFromEdge / sspeed;
+  
+  //    double rr_tim1 = CLHEP::RandGaussQ::shoot(engine, 0.,resRPC);
+  double rr_tim1 = CLHEP::RandGaussQ::shoot(engine, 0., irpc_timing_res);
+  
+  double total_time = tof + prop_time + timOff + rr_tim1 + rr_el;
+  
+  // Bunch crossing assignment
+  double time_differ = 0.;
+  
+  if (cosmics) {
+    time_differ = (total_time - (timeref + ((half_stripL / sspeed) + timOff))) / cosmicPar;
+  } else if (!cosmics) {
+    time_differ = total_time - (timeref + (half_stripL / sspeed) + timOff);
+  }
+  
+  
+  return time_differ;
+}
+
+
+float RPCSynchronizer::getSecondTDCTiming(float t, CLHEP::HepRandomEngine* engine, float StripLength){
+  float time_oppset = StripLength/sspeed;
+  float rr_el = CLHEP::RandGaussQ::shoot(engine, 0., irpc_electronics_jitter); // time smearing to simulate second TDC resolution
+  return t + rr_el - time_oppset;
+}
+
+
+int RPCSynchronizer::getBX(float time){
+  int bx = -999;
+  double inf_time = 0;
+  double sup_time = 0;
+  
+  for (int n = -N_BX; n <= N_BX; ++n) {
+    if (cosmics) {
+      inf_time = (-lbGate / 2 + n * LHCGate) / cosmicPar;
+      sup_time = (lbGate / 2 + n * LHCGate) / cosmicPar;
+    } else if (!cosmics) {
+      inf_time = -lbGate / 2 + n * LHCGate;
+      sup_time = lbGate / 2 + n * LHCGate;
+    }
+    
+    if (inf_time < time && time < sup_time) {
+      bx = n;
+      break;
     }
   }
   return bx;
 }
+
+std::pair<int,int> RPCSynchronizer::getBX_SBX(float time){
+  const float LB_clock = 25.; // 25 ns
+  const float LB_precise_clock=2.5; // 2.5 ns
+  int BX=int(time/LB_clock);
+  if(time<0) BX--;
+  double dt=time-BX*LB_clock;
+  int SBX = int(dt/LB_precise_clock);
+  std::pair<int,int> tdc;
+  tdc.first=BX;
+  tdc.second=SBX;
+  return tdc;
+}
+
+std::tuple<int,int,int> RPCSynchronizer::getBX_SBX_fine_time(float time){
+   const float LB_clock = 25.; // 25 ns
+  const float LB_precise_clock=2.5; // 2.5 ns
+  const float LB_fine_clock = 0.2; // 200 ps = 0.2 ns
+  int BX=int(time/LB_clock);
+  if(time<0) BX--;
+  double dt=time-BX*LB_clock;
+  int SBX = int(dt/LB_precise_clock);
+  dt=time-BX*LB_clock-SBX*LB_precise_clock;
+  int fine_time = int(dt/LB_fine_clock);
+  std::tuple<int,int,int> tdc;
+  tdc = std::make_tuple(BX,SBX,fine_time);
+  return tdc;
+}
+
