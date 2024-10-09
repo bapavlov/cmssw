@@ -60,7 +60,7 @@ protected:
 protected:
   std::set<std::pair<int, int> > strips;
   std::set<RPCDigi> rpc_digis;
-  std::set<RPCDigiPhase2> rpcp2_digis;
+  std::set<RPCDigiPhase2> rpc_digis_phase2;
   std::set<IRPCDigi> irpc_digis;
 
   //--------NEW---------------------

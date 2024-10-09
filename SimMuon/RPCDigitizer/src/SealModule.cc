@@ -15,6 +15,7 @@
 #include "SimMuon/RPCDigitizer/src/RPCSimAverageNoiseEffCls.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimAsymmetricCls.h"
 #include "SimMuon/RPCDigitizer/src/RPCSimModelTiming.h"
+#include "SimMuon/RPCDigitizer/src/RPCSimModelTimingPhase2.h"
 #include "SimMuon/RPCDigitizer/src/IRPCSimModelTiming.h"
 #include "SimMuon/RPCDigitizer/src/RPCNeutronWriter.h"
 
@@ -26,5 +27,7 @@ DEFINE_FWK_MODULE(IRPCDigiProducer);
 DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimAverageNoiseEffCls, "RPCSimAverageNoiseEffCls");
 DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimAsymmetricCls, "RPCSimAsymmetricCls");
 DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimModelTiming, "RPCSimModelTiming");
+DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimModelTiming, "RPCSimModelTimingPhase2");
 DEFINE_EDM_PLUGIN(RPCSimFactory, IRPCSimModelTiming, "IRPCSimModelTiming");
+
 DEFINE_FWK_MODULE(RPCNeutronWriter);

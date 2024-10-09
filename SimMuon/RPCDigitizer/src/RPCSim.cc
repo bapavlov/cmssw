@@ -41,13 +41,13 @@ void RPCSim::fillDigis(int rollDetId, IRPCDigiCollection& digis) {
 }
 
 void RPCSim::fillDigis(int rollDetId, RPCDigiPhase2Collection& digis) {
-  for (auto it : rpcp2_digis) {
+  for (auto it : rpc_digis_phase2) {
     if (it.bx() != -999) {
       digis.insertDigi(RPCDetId(rollDetId), it);
       this->addLinks(it.strip(), it.bx());
     }
   }
-  rpcp2_digis.clear();
+  rpc_digis_phase2.clear();
 }
 
 

@@ -119,7 +119,7 @@ simMuonRPCDigisPhase2 = cms.EDProducer("RPCDigiPhase2Producer",
     Signal = cms.bool(True),
     mixLabel = cms.string('mix'),
     InputCollection = cms.string('g4SimHitsMuonRPCHits'),
-    digiModel = cms.string('RPCSimModelTiming')
+    digiModel = cms.string('RPCSimModelTimingPhase2')
 )
 
 #the digitizer for IRPC chambers is IRPCSimModelTiming and is based on  RPCSimAverageNoiseEffCls 
