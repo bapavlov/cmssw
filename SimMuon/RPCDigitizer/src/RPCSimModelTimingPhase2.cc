@@ -145,7 +145,6 @@ void RPCSimModelTimingPhase2::simulate(const RPCRoll* roll,
           }
         }
       }
-
       //digitize all the strips in the cluster
       //in the previuos version some strips were dropped
       //leading to un-physical "shift" of the cluster

@@ -3,7 +3,7 @@
 
 /** \class IRPCDigi
  *
- * Digi for Resisitive Plate Chamber
+ * Digi for Improved Resisitive Plate Chamber (IRPC)
  *  
  * \author Borislav Pavlov - University of Sofia
 */

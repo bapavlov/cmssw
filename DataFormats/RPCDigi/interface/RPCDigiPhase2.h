@@ -1,9 +1,9 @@
 #ifndef RPCDigi_RPCDigiPhase2_h
 #define RPCDigi_RPCDigiPhase2_h
 
-/** \class IRPCDigiPhase2
+/** \class RPCDigiPhase2
  *
- * Digi for Resisitive Plate Chamber
+ * Digi for Resisitive Plate Chamber, after Phase2 upgrade 
  *  
  * \author Borislav Pavlov - University of Sofia
 */

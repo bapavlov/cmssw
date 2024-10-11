@@ -88,23 +88,16 @@ void IRPCSimModelTiming::simulate(const RPCRoll* roll,
   for (edm::PSimHitContainer::const_iterator _hit = rpcHits.begin(); _hit != rpcHits.end(); ++_hit) {
     if (!eledig && _hit->particleType() == 11)
       continue;
-    // Here I hould check if the RPC are up side down;
+
+    // Here I would check if the RPC are up side down;
     const LocalPoint& entr = _hit->entryPoint();
-
-    float striplength;
-    
     const TrapezoidalStripTopology* top_ = dynamic_cast<const TrapezoidalStripTopology*>(&(roll->topology()));
-    striplength = (top_->stripLength());
+    float striplength = (top_->stripLength());
 
-    float proper_time = _rpcSync->getTiming(&(*_hit), engine,striplength);
-    float TDC2_time = _rpcSync->getSecondTDCTiming(proper_time, engine,striplength);
-
-    //    std::pair<int,int> tdc1 = _rpcSync->getBX_SBX(proper_time); //calculates the BX and subBX for the first TDC 
-    //    std::pair<int,int> tdc2 = _rpcSync->getBX_SBX(TDC2_time); //calculates the BX and subBX for the second TDC  
-
-    std::tuple<int,int,int> tdc1 = _rpcSync->getBX_SBX_fine_time(proper_time); //calculates the BX,subBX and fine_time for the first TDC
-    std::tuple<int,int,int> tdc2 = _rpcSync->getBX_SBX_fine_time(TDC2_time); //calculates the BX,subBX and fine_time for the first TDC
-
+    std::pair<float,float> TDCs = _rpcSync->getDoubleTiming(&(*_hit), engine,striplength); // get the timing for the two TDCs
+    std::tuple<int,int,int> tdc1 = _rpcSync->getBX_SBX_fine_time(TDCs.first); //calculates the BX,subBX and fine_time for the first TDC
+    std::tuple<int,int,int> tdc2 = _rpcSync->getBX_SBX_fine_time(TDCs.second); //calculates the BX,subBX and fine_time for the second TDC
+    
     float posX = roll->strip(_hit->localPosition()) - static_cast<int>(roll->strip(_hit->localPosition()));
 
     std::vector<float> veff = (getRPCSimSetUp())->getEff(rpcId.rawId());
@@ -113,9 +106,7 @@ void IRPCSimModelTiming::simulate(const RPCRoll* roll,
     int centralStrip = topology.channel(entr) + 1;
     
     float fire = CLHEP::RandFlat::shoot(engine);
-
-    //    float smearedPositionY = CLHEP::RandGaussQ::shoot(engine, _hit->localPosition().y(), sigmaY);
-
+    
     if (fire < veff[centralStrip - 1]) {
       int fstrip = centralStrip;
       int lstrip = centralStrip;
@@ -152,21 +143,13 @@ void IRPCSimModelTiming::simulate(const RPCRoll* roll,
           }
         }
       }
-
       //digitize all the strips in the cluster
       //in the previuos version some strips were dropped
       //leading to un-physical "shift" of the cluster
       for (std::vector<int>::iterator i = cls.begin(); i != cls.end(); i++) {
         std::pair<int, int> digi(*i, std::get<0>(tdc1));
 	IRPCDigi adigi(*i, std::get<0>(tdc1),std::get<0>(tdc2),std::get<1>(tdc1),std::get<1>(tdc2),std::get<2>(tdc1),std::get<2>(tdc2));
-        //adigi.hasTime(true);
-        //adigi.setTime(precise_time);
-	
-	
-	//@@@ // adigi.setY(smearedPositionY);
-          
-        
-        irpc_digis.insert(adigi);
+	irpc_digis.insert(adigi);
         theDetectorHitMap.insert(DetectorHitMap::value_type(digi, &(*_hit)));
       }
     }
@@ -214,17 +197,7 @@ void IRPCSimModelTiming::simulateNoise(const RPCRoll* roll, CLHEP::HepRandomEngi
       int TDC2_fine = CLHEP::RandFlat::shootInt(long(0), long(12));
 
       IRPCDigi adigi(j + 1, TDC1_BX,TDC2_BX,TDC1_SBX,TDC2_SBX,TDC1_fine,TDC2_fine);     
-      //adigi.hasTime(true);                                                                                                                   
-      //adigi.setTime(precise_time);                                                                                                           
       irpc_digis.insert(adigi);
-
-
-      //    IRPCDigi adigi(j + 1, time_hit);
-      //adigi.hasTime(true);
-      //adigi.setTime(precise_time);
-      //double positionY = CLHEP::RandFlat::shoot(engine, striplength);
-      //positionY -= striplength / 2;
-      //irpc_digis.insert(adigi);
     }
   }
 }
