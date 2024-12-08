@@ -18,8 +18,11 @@ muonDigi = cms.Sequence(muonDigiTask)
 from SimMuon.GEMDigitizer.muonGEMDigi_cff import *
 from SimMuon.GEMDigitizer.muonME0Digi_cff import *
 
-_run3_muonDigiTask = muonDigiTask.copy()
+#_run3_muonDigiTask = muonDigiTask.copy()
+_run3_muonDigiTask = cms.Task(simMuonCSCDigis, simMuonDTDigis)
 _run3_muonDigiTask.add(muonGEMDigiTask)
+_run3_muonDigiTask.add(simMuonRPCDigisPhaseII)
+_run3_muonDigiTask.add(simMuonIRPCDigis)
 
 _phase2_muonDigiTask = _run3_muonDigiTask.copy()
 _phase2_muonDigiTask.add(muonME0DigiTask)

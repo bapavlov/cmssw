@@ -8,6 +8,7 @@
  */
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
 #include "DataFormats/RPCDigi/interface/RPCDigiCollection.h"
+#include "DataFormats/IRPCDigi/interface/IRPCDigiCollection.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
@@ -40,6 +41,8 @@ public:
 
   virtual void fillDigis(int rollDetId, RPCDigiCollection& digis);
 
+  virtual void fillDigis(int rollDetId, IRPCDigiCollection& digis);
+
   void setRPCSimSetUp(RPCSimSetUp* setup) { theSimSetUp = setup; }
 
   RPCSimSetUp* getRPCSimSetUp() { return theSimSetUp; }
@@ -53,7 +56,8 @@ protected:
 
 protected:
   std::set<std::pair<int, int> > strips;
-  std::set<RPCDigi> irpc_digis;
+  std::set<RPCDigi> rpc_digis;
+  std::set<IRPCDigi> irpc_digis;
 
   //--------NEW---------------------
 

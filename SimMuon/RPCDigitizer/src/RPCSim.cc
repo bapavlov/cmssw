@@ -21,6 +21,16 @@ void RPCSim::fillDigis(int rollDetId, RPCDigiCollection& digis) {
   }
   strips.clear();
 
+  for (auto it : rpc_digis) {
+    if (it.bx() != -999) {
+      digis.insertDigi(RPCDetId(rollDetId), it);
+      this->addLinks(it.strip(), it.bx());
+    }
+  }
+  rpc_digis.clear();
+}
+
+void RPCSim::fillDigis(int rollDetId, IRPCDigiCollection& digis) {
   for (auto it : irpc_digis) {
     if (it.bx() != -999) {
       digis.insertDigi(RPCDetId(rollDetId), it);
@@ -29,6 +39,8 @@ void RPCSim::fillDigis(int rollDetId, RPCDigiCollection& digis) {
   }
   irpc_digis.clear();
 }
+
+
 
 void RPCSim::addLinks(unsigned int strip, int bx) {
   std::pair<unsigned int, int> digi(strip, bx);
