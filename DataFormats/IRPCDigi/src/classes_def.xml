@@ -1,7 +1,7 @@
 <lcgdict>
 
-<class name="IRPCDigi" ClassVersion="5">
-  <version ClassVersion="5" checksum="2178828727"/>
+<class name="IRPCDigi" ClassVersion="6">
+  <version ClassVersion="6" checksum="4057097095"/>
 </class>
 
 <class name="std::vector<IRPCDigi>"/>

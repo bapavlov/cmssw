@@ -185,8 +185,6 @@ int RPCSynchronizer::getSimHitBxAndTimingForIRPC(const PSimHit* simhit, CLHEP::H
     }
     
     float prop_time = distanceFromEdge / sspeed;
-
-    //    double rr_tim1 = CLHEP::RandGaussQ::shoot(engine, 0.,resRPC);
     double rr_tim1 = CLHEP::RandGaussQ::shoot(engine, 0., irpc_timing_res);
 
     double total_time = tof + prop_time + timOff + rr_tim1 + rr_el;
@@ -241,8 +239,6 @@ float RPCSynchronizer::getTiming(const PSimHit* simhit, CLHEP::HepRandomEngine* 
   float tof = simhit->timeOfFlight();
 
   //automatic variable to prevent memory leak
-
-  //  float rr_el = CLHEP::RandGaussQ::shoot(engine, 0.,resEle);
   float rr_el = CLHEP::RandGaussQ::shoot(engine, 0., irpc_electronics_jitter);
 
   RPCDetId SimDetId(simhit->detUnitId());
@@ -261,7 +257,6 @@ float RPCSynchronizer::getTiming(const PSimHit* simhit, CLHEP::HepRandomEngine* 
   
   float prop_time = distanceFromEdge / sspeed;
   
-  //    double rr_tim1 = CLHEP::RandGaussQ::shoot(engine, 0.,resRPC);
   double rr_tim1 = CLHEP::RandGaussQ::shoot(engine, 0., irpc_timing_res);
   
   double total_time = tof + prop_time + timOff + rr_tim1 + rr_el;
@@ -287,14 +282,6 @@ std::pair<float,float> RPCSynchronizer::getDoubleTiming(const PSimHit* simhit,CL
   LocalPoint simHitPos = simhit->localPosition();
   float tof = simhit->timeOfFlight();
   RPCDetId SimDetId(simhit->detUnitId());
-
-  float signalSign;
-  if (SimDetId.region() == 0) {
-    signalSign=1;
-  } else {
-    signalSign = -1;;
-  }
-
   
   double rpc_resolution = CLHEP::RandGaussQ::shoot(engine, 0., irpc_timing_res);
   
@@ -309,11 +296,11 @@ std::pair<float,float> RPCSynchronizer::getDoubleTiming(const PSimHit* simhit,CL
   // The correct signal propagation is StripLength/2 + signalSign*simHitPos.y()/sspeed, but
   // StripLength/2 sohould be substituted in order to have time = 0 when the particle hits the center of the RPC,
   // so signal propagation is StripLength/2 + signalSign*simHitPos.y()/sspeed - StripLength/2 = signalSign*simHitPos.y()/sspeed
-  double tdc_LR_time = rpc_time + signalSign*simHitPos.y()/sspeed + feb_resolution;
+  double tdc_LR_time = rpc_time + simHitPos.y()/sspeed + feb_resolution;
 
   //In the similar way for the second FEB and TDC
   feb_resolution = CLHEP::RandGaussQ::shoot(engine, 0., irpc_electronics_jitter);
-  double tdc_HR_time = rpc_time - signalSign*simHitPos.y()/sspeed + feb_resolution;
+  double tdc_HR_time = rpc_time - simHitPos.y()/sspeed + feb_resolution;
   
   if (cosmics) {
     tdc_LR_time /=cosmicPar;
@@ -323,12 +310,6 @@ std::pair<float,float> RPCSynchronizer::getDoubleTiming(const PSimHit* simhit,CL
   std::pair<float,float> TDCs;
   TDCs.first =  tdc_LR_time;
   TDCs.second = tdc_HR_time;
-
-
-  //std::cout<<"Debug Timing:\t"
-  //	   <<"rpc_time=\t"<< rpc_time <<"\t(tdc_HR_time+tdc_LR_time)/2.=\t"<<(tdc_HR_time+tdc_LR_time)/2.<<std::endl;
-  //std::cout<<"Debug Position:\t"
-  //	   <<"simHitPos.y()=\t"<<simHitPos.y() <<"\tsspeed*(tdc_HR_time-tdc_LR_time)/2.=\t"<<sspeed*(tdc_HR_time-tdc_LR_time)/2.<<std::endl;
   
   return TDCs;
 }
@@ -358,7 +339,7 @@ int RPCSynchronizer::getBX(float time){
 
 std::pair<int,int> RPCSynchronizer::getBX_SBX(float time){
   const float LB_clock = 25.; // 25 ns
-  const float LB_precise_clock=2.5; // 2.5 ns
+  const float LB_precise_clock=1.5625; // 25./16. = 1.5625 ns
   int BX=int(time/LB_clock);
   if(time<0) BX--;
   double dt=time-BX*LB_clock;

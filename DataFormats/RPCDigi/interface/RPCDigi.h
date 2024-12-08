@@ -44,7 +44,7 @@ public:
 private:
   uint16_t strip_;
   int32_t bx_;
-  int32_t sbx_;
+  int8_t sbx_;
 };
 
 std::ostream& operator<<(std::ostream& o, const RPCDigi& digi);

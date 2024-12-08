@@ -1,6 +1,7 @@
 <lcgdict>
 
-<class name="RPCDigi" ClassVersion="14">
+<class name="RPCDigi" ClassVersion="15">
+ <version ClassVersion="15" checksum="2720368558"/>      
  <version ClassVersion="14" checksum="2935734335"/>
  <version ClassVersion="13" checksum="3650334651"/>
 </class>
