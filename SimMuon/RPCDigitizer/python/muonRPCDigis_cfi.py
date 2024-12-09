@@ -58,7 +58,7 @@ simMuonRPCDigisPhaseII = cms.EDProducer("RPCDigiProducer",
         timeJitter = cms.double(0.1),
         sigmaY = cms.double(2.), # resolution of 2 cm
         do_Y_coordinate = cms.bool(False),
-        digitizeElectrons = cms.bool(True),
+        digitizeElectrons = cms.bool(False),
         IRPC_time_resolution = cms.double(1.5),# intrinsic time resolution of 1.5 ns
         IRPC_electronics_jitter = cms.double(0.1)# resolution of 100 ps
     ),
@@ -92,7 +92,7 @@ simMuonIRPCDigis = cms.EDProducer("IRPCDigiProducer",
         IRPC_electronics_jitter = cms.double(0.1),# resolution of 100 ps
         sigmaY = cms.double(2.), # resolution of 2 cm
         do_Y_coordinate = cms.bool(True),
-        digitizeElectrons = cms.bool(True),
+        digitizeElectrons = cms.bool(False),
     ),
     doBkgNoise = cms.bool(False), #False - no noise and bkg simulation                                                                        
     Signal = cms.bool(True),
