@@ -26,7 +26,7 @@ public:
 private:
   uint16_t strip_;
   int32_t bx_;    // for BX 
-  int32_t sbx_;   // for sub-BX   
+  int8_t sbx_;   // for sub-BX   
 };
 
 std::ostream& operator<<(std::ostream& o, const RPCDigiPhase2& digi);

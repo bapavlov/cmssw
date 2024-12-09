@@ -48,7 +48,10 @@ void RPCDigitizerPhase2::doAction(MixCollection<PSimHit>& simHits,
     }
 
     theRPCSim->fillDigis((*r)->id(), rpcDigis);
-    rpcDigiSimLink.insert(theRPCSim->rpcDigiSimLinks());
+    if (rpcDigiSimLink.find((theRPCSim->rpcDigiSimLinks()).detId()) ==
+	rpcDigiSimLink.end()){
+      rpcDigiSimLink.insert(theRPCSim->rpcDigiSimLinks());
+    }
   }
 }
 
