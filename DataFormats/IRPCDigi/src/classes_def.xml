@@ -2,6 +2,7 @@
 
 <class name="IRPCDigi" ClassVersion="0">
  <version ClassVersion="0" checksum="4103044833"/>
+  <version ClassVersion="-1" checksum="0"/>
 </class>
 
 <class name="std::vector<IRPCDigi>"/>
