@@ -9,6 +9,7 @@
 <class name="std::map<RPCDetId,std::vector<IRPCDigi> >"/>
 <class name="std::pair<RPCDetId,std::vector<IRPCDigi> >"/>
 <class name="MuonDigiCollection<RPCDetId,IRPCDigi>"/>                                                                                         <class name="edm::Wrapper<MuonDigiCollection<RPCDetId,IRPCDigi>>" splitLevel="0"/>   
-  
+
+
 </lcgdict>
  
