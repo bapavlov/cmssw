@@ -27,7 +27,7 @@ DEFINE_FWK_MODULE(IRPCDigiProducer);
 DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimAverageNoiseEffCls, "RPCSimAverageNoiseEffCls");
 DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimAsymmetricCls, "RPCSimAsymmetricCls");
 DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimModelTiming, "RPCSimModelTiming");
-DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimModelTiming, "RPCSimModelTimingPhase2");
+DEFINE_EDM_PLUGIN(RPCSimFactory, RPCSimModelTimingPhase2, "RPCSimModelTimingPhase2");
 DEFINE_EDM_PLUGIN(RPCSimFactory, IRPCSimModelTiming, "IRPCSimModelTiming");
 
 DEFINE_FWK_MODULE(RPCNeutronWriter);
